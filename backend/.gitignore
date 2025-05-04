@@ -1,0 +1,14 @@
+# Dependencies
+/node_modules
+
+# Environment variables
+.env
+
+# Optional files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Production build folder
+/build
+/dist

@@ -1,0 +1,136 @@
+Aveo Cafe & Lounge – Full Prompt List for App Builder (HTML, CSS, JS + MongoDB + Render)
+Each prompt below is standalone and focuses on a small task so it can be fed into an AI platform like Windsurf or Trae efficiently.
+
+🟢 Section 1: Project Setup
+Prompt 1: Initialize Project Repository
+pgsql
+Copy
+Edit
+Create a new project called "Aveo Cafe & Lounge". Set up a GitHub repo structure with separate folders for `/frontend` (HTML/CSS/JS admin panel) and `/backend` (Node.js server). Use a `.gitignore` file to ignore node_modules and environment variables.
+Prompt 2: Setup Backend Server
+pgsql
+Copy
+Edit
+Create a backend using Node.js and Express. Configure it to connect to MongoDB Atlas and expose a base route `/api/status` that returns `{ status: "Aveo Backend Running" }`.
+Prompt 3: Connect MongoDB Atlas
+pgsql
+Copy
+Edit
+Set up Mongoose and connect to MongoDB Atlas. Create a `db.js` file to handle connection logic and export it.
+🟡 Section 2: MongoDB Schema (Mongoose)
+Prompt 4: Create User Model
+pgsql
+Copy
+Edit
+Create a Mongoose model called `User` with fields: `username`, `password`, `role` (enum: admin, supervisor, waiter), `createdAt`. Add timestamps and bcrypt password hash method.
+Prompt 5: Create Menu Item Model
+javascript
+Copy
+Edit
+Create a `MenuItem` schema with fields: `name`, `description`, `price`, `category`, `imageURL`, `stock`, `expiryDate`, `batchNumber`, `createdAt`. Include a `lowStockAlertThreshold`.
+Prompt 6: Create Order Model
+go
+Copy
+Edit
+Create an `Order` schema with: `tableNumber`, `items` (array of item+qty), `orderType` (KOT/BOT), `status` (pending/served), `createdBy`, `createdAt`, `discount`, `taxes`, `serviceCharge`, `totalAmount`.
+Prompt 7: Create Table Layout Model
+go
+Copy
+Edit
+Create a `Table` schema with: `tableNumber`, `seats`, `status` (available, occupied), `assignedWaiter`.
+🔵 Section 3: Backend API Endpoints
+Prompt 8: Create User Auth Routes
+pgsql
+Copy
+Edit
+Create login/logout/register API endpoints using Express. Authenticate using username/password. Issue a JWT token on login.
+Prompt 9: Role-Based Access Middleware
+pgsql
+Copy
+Edit
+Create middleware to restrict access to certain routes based on user role (admin, supervisor, waiter).
+Prompt 10: CRUD for Menu Items
+pgsql
+Copy
+Edit
+Create RESTful endpoints to Create, Read, Update, Delete menu items. Only admin and supervisor can create/edit/delete. Waiter can only read.
+Prompt 11: CRUD for Orders
+pgsql
+Copy
+Edit
+Create API endpoints to create and view orders. Waiters can place orders. Admin/supervisor can view KOT/BOT style details with all charges included.
+Prompt 12: Table Assignment & Splitting Bills
+pgsql
+Copy
+Edit
+Create APIs to assign tables, view table status, and split bills across guests. Enable order updates by table.
+Prompt 13: Inventory Auto Update
+sql
+Copy
+Edit
+Every time an order is placed, automatically reduce item quantity in stock. If quantity < threshold, trigger low stock alert.
+Prompt 14: Image Upload (Menu Photos)
+pgsql
+Copy
+Edit
+Allow image upload via Multer to a local folder or third-party service like Cloudinary. Store imageURL in `MenuItem`.
+🟣 Section 4: Frontend (Admin Panel – HTML/CSS/JS)
+Prompt 15: Build Admin Login Page
+pgsql
+Copy
+Edit
+Create a simple responsive login page using HTML/CSS/JS. On submit, call backend login API and store token in localStorage.
+Prompt 16: Dashboard Overview Page
+pgsql
+Copy
+Edit
+Build a dashboard showing summary cards: Total Sales Today, Total Orders, Inventory Alerts, Active Tables. Use vanilla JS to fetch data from backend.
+Prompt 17: Inventory Management Page
+pgsql
+Copy
+Edit
+Create a page that displays all menu items and their stock levels. Allow admin to add, edit, or delete items. Highlight items with low stock.
+Prompt 18: Order View Page
+pgsql
+Copy
+Edit
+Create a page showing current KOT/BOT orders with filters by status, waiter, or time range. Show receipt preview format.
+Prompt 19: Sales Report Page
+pgsql
+Copy
+Edit
+Create a report generator UI that lets user select date range, generate sales by item, waiter, or category. Include buttons to export CSV, PDF, Excel.
+Prompt 20: Table Layout Page
+pgsql
+Copy
+Edit
+Create a visual table layout (grid of tables) where clicking a table shows current status and allows order assignment. Use JS for interactivity.
+🔴 Section 5: Real-Time & Offline
+Prompt 21: Real-Time Updates
+pgsql
+Copy
+Edit
+Use Socket.io to push new order notifications to kitchen and admin dashboard in real-time when waiter places a new order.
+Prompt 22: Offline Mode
+pgsql
+Copy
+Edit
+Enable offline order saving on waiter device using localStorage or IndexedDB. Sync pending orders automatically when back online.
+🟤 Section 6: Deployment & CI/CD
+Prompt 23: Setup CI/CD via GitHub Actions
+vbnet
+Copy
+Edit
+Configure GitHub Actions to auto-deploy the `/frontend` to Netlify and `/backend` to Render on every push to main branch.
+Prompt 24: Netlify & Render Deployment
+pgsql
+Copy
+Edit
+Deploy the frontend folder to Netlify. Deploy the backend (Node.js) to Render. Connect to MongoDB Atlas and ensure environment variables are set.
+
+
+aveocafelounge@gmail.com
+Aveo2025
+
+mongodb+srv://aveocafelounge:Aveo2025@cluster0.5ctb1jq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+// mongodb+srv://aveocafelounge:Aveo2025@cluster0.5ctb1jq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
