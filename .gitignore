@@ -36,3 +36,11 @@ yarn-error.log*
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# MongoDB
+*.mongodb
+mongodb.log
+
+# Temporary files
+*.tmp
+*.temp

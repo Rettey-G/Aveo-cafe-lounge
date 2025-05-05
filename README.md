@@ -7,7 +7,8 @@ A comprehensive cafe management system built with the MERN stack (MongoDB, Expre
 - Menu Management
 - Table Layout Management
 - Order Taking System
-- Inventory Management
+- Invoice Generation
+- Inventory Management with Low Stock Alerts
 - Contact Form
 - About Page
 
@@ -82,9 +83,40 @@ A comprehensive cafe management system built with the MERN stack (MongoDB, Expre
 3. Add your IP address to the whitelist
 4. Get your connection string and update it in the backend `.env` file
 
+## Features in Detail
+
+### Menu Management
+- Add, edit, and remove menu items
+- Categorize items (Hot Coffee, Cold Coffee, Tea, etc.)
+- Set prices and descriptions
+- Track inventory levels
+
+### Table Layout
+- Manage table arrangements
+- Track table status (available, occupied, reserved)
+- Assign tables to orders
+
+### Order Taking
+- Create new orders
+- Add items to orders
+- Modify quantities
+- Track order status
+
+### Invoice Generation
+- Generate unique invoice numbers
+- Include customer details
+- Calculate subtotal, tax, and total
+- Print or save invoices
+
+### Inventory Management
+- Track stock levels
+- Set minimum stock thresholds
+- Receive low stock alerts
+- Monitor expiry dates
+
 ## Development
 
-- Backend runs on: http://localhost:10000
+- Backend runs on: http://localhost:5000
 - Frontend runs on: http://localhost:3000
 
 ## Contributing
