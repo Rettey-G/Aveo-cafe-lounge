@@ -7,20 +7,20 @@ const InventoryPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
   // Fetch menu items on component mount
   useEffect(() => {
     const fetchMenuItems = async () => {
       try {
-        // Assuming your backend API endpoint for menu items is /api/menu-items
-        // Adjust the URL and add authentication headers if needed
-        const token = localStorage.getItem('token'); // Or however you store the auth token
+        const token = localStorage.getItem('token');
         const config = {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           }
         };
-        const { data } = await axios.get('/api/menu-items', config);
+        const { data } = await axios.get(`${API_URL}/menu-items`, config);
         setMenuItems(data);
         setLoading(false);
       } catch (err) {
@@ -31,7 +31,7 @@ const InventoryPage = () => {
     };
 
     fetchMenuItems();
-  }, []);
+  }, [API_URL]);
 
   // Function to handle stock update
   const handleStockUpdate = async (id, newStock) => {
@@ -49,7 +49,7 @@ const InventoryPage = () => {
         }
       };
       // Send PUT request to update stock quantity
-      await axios.put(`/api/menu-items/${id}`, { stockQuantity: newStock }, config);
+      await axios.put(`${API_URL}/menu-items/${id}`, { stockQuantity: newStock }, config);
 
       // Update the state locally
       setMenuItems(prevItems =>

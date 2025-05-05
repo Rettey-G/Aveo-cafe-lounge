@@ -23,7 +23,10 @@ const app = express();
 // Security Middleware
 app.use(helmet()); // Adds various HTTP headers for security
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: [
+    process.env.FRONTEND_URL || 'http://localhost:3000',
+    'https://aveo-cafe-lounge.netlify.app'
+  ],
   credentials: true
 }));
 
