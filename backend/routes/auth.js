@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { login, createAdmin } = require('../controllers/auth');
 
 const router = express.Router();
 
@@ -60,50 +61,7 @@ router.post('/register', async (req, res) => {
 // @route   POST api/auth/login
 // @desc    Authenticate user & get token
 // @access  Public
-router.post('/login', async (req, res) => {
-  const { username, password } = req.body;
-
-  try {
-    // Check for user
-    let user = await User.findOne({ username });
-    if (!user) {
-      return res.status(400).json({ msg: 'Invalid Credentials' });
-    }
-
-    // Check password
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
-      return res.status(400).json({ msg: 'Invalid Credentials' });
-    }
-
-    // Create JWT Payload
-    const payload = {
-      user: {
-        id: user.id,
-        role: user.role
-      }
-    };
-
-    // Sign token
-    if (!process.env.JWT_SECRET) {
-      console.error('Error: JWT_SECRET environment variable is not set.');
-      return res.status(500).send('Server configuration error');
-    }
-    jwt.sign(
-      payload,
-      process.env.JWT_SECRET,
-      { expiresIn: 3600 },
-      (err, token) => {
-        if (err) throw err;
-        res.json({ token });
-      }
-    );
-
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
-  }
-});
+router.post('/login', login);
 
 // @route   POST api/auth/logout
 // @desc    Logout user (typically handled client-side by removing token)
@@ -115,5 +73,9 @@ router.post('/logout', (req, res) => {
     res.json({ msg: 'Logout successful' });
 });
 
+// @route   POST api/auth/create-admin
+// @desc    Create a new admin user
+// @access  Private (admin only)
+router.post('/create-admin', createAdmin);
 
 module.exports = router;

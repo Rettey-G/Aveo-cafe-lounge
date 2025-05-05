@@ -4,6 +4,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const connectDB = require('./db'); // Correct path to db connection logic
+const mongoose = require('mongoose');
 
 // Debug logging
 console.log('Environment variables loaded:');
@@ -33,6 +34,11 @@ app.use(limiter);
 // Init Middleware
 app.use(express.json({ extended: false })); // To parse JSON request bodies
 
+// Connect to MongoDB
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('MongoDB Connected'))
+  .catch(err => console.log('MongoDB Connection Error:', err));
+
 const PORT = process.env.PORT || 5000;
 
 // Error handling middleware
@@ -58,6 +64,27 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/menu-items', require('./routes/menuItems'));
 app.use('/api/orders', require('./routes/orders')); // Add the new orders route
 app.use('/api/tables', require('./routes/tables')); // Add the new tables route
+app.use('/api/invoices', require('./routes/invoices'));
+
+// Create initial admin user
+const User = require('./models/User');
+const createInitialAdmin = async () => {
+  try {
+    const adminExists = await User.findOne({ role: 'admin' });
+    if (!adminExists) {
+      await User.create({
+        username: 'admin',
+        password: 'admin123',
+        role: 'admin'
+      });
+      console.log('Initial admin user created');
+    }
+  } catch (err) {
+    console.error('Error creating initial admin:', err);
+  }
+};
+
+createInitialAdmin();
 
 // Handle 404 routes
 app.use((req, res) => {
