@@ -8,40 +8,25 @@ const MenuItemSchema = new mongoose.Schema({
   },
   description: {
     type: String,
-    trim: true
+    required: true,
   },
   price: {
     type: Number,
     required: true,
-    min: 0
   },
   category: {
     type: String,
     required: true,
-    trim: true
   },
-  imageURL: {
+  imageUrl: {
     type: String,
-    trim: true
   },
-  stock: {
+  stockQuantity: {
     type: Number,
     required: true,
-    min: 0,
-    default: 0
-  },
-  expiryDate: {
-    type: Date
-  },
-  batchNumber: {
-    type: String,
-    trim: true
-  },
-  lowStockAlertThreshold: {
-    type: Number,
-    min: 0,
-    default: 10 // Default threshold, can be adjusted per item
+    default: 0, // Default stock quantity to 0
+    min: 0 // Ensure stock quantity is not negative
   }
-}, { timestamps: true }); // Adds createdAt and updatedAt fields automatically
+});
 
-module.exports = mongoose.model('MenuItem', MenuItemSchema);
+module.exports = mongoose.model('MenuItem', menuItemSchema);

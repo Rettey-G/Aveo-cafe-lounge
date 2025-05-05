@@ -7,7 +7,7 @@ const { protect, authorize } = require('../middleware/authMiddleware');
 // @desc    Create a menu item
 // @access  Private (Admin, Supervisor)
 router.post('/', protect, authorize('admin', 'supervisor'), async (req, res) => {
-  const { name, description, price, category, imageURL, stock, expiryDate, batchNumber, lowStockAlertThreshold } = req.body;
+  const { name, description, price, category, imageUrl, stockQuantity } = req.body; // Updated fields
 
   try {
     const newItem = new MenuItem({
@@ -15,11 +15,8 @@ router.post('/', protect, authorize('admin', 'supervisor'), async (req, res) => 
       description,
       price,
       category,
-      imageURL,
-      stock,
-      expiryDate,
-      batchNumber,
-      lowStockAlertThreshold
+      imageUrl, // Updated field name
+      stockQuantity // Updated field name
     });
 
     const menuItem = await newItem.save();
@@ -68,7 +65,7 @@ router.get('/:id', protect, async (req, res) => {
 // @desc    Update a menu item
 // @access  Private (Admin, Supervisor)
 router.put('/:id', protect, authorize('admin', 'supervisor'), async (req, res) => {
-  const { name, description, price, category, imageURL, stock, expiryDate, batchNumber, lowStockAlertThreshold } = req.body;
+  const { name, description, price, category, imageUrl, stockQuantity } = req.body; // Updated fields
 
   // Build menu item object
   const menuItemFields = {};
@@ -76,11 +73,8 @@ router.put('/:id', protect, authorize('admin', 'supervisor'), async (req, res) =
   if (description) menuItemFields.description = description;
   if (price) menuItemFields.price = price;
   if (category) menuItemFields.category = category;
-  if (imageURL) menuItemFields.imageURL = imageURL;
-  if (stock !== undefined) menuItemFields.stock = stock; // Allow setting stock to 0
-  if (expiryDate) menuItemFields.expiryDate = expiryDate;
-  if (batchNumber) menuItemFields.batchNumber = batchNumber;
-  if (lowStockAlertThreshold) menuItemFields.lowStockAlertThreshold = lowStockAlertThreshold;
+  if (imageUrl) menuItemFields.imageUrl = imageUrl; // Updated field name
+  if (stockQuantity !== undefined) menuItemFields.stockQuantity = stockQuantity; // Updated field name, allow setting to 0
 
   try {
     let menuItem = await MenuItem.findById(req.params.id);
