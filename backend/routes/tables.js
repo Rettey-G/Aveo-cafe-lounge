@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const Table = require('../models/Table');
-const authMiddleware = require('../middleware/authMiddleware'); // Assuming auth middleware exists
+const { protect } = require('../middleware/authMiddleware');
 
 // @route   GET api/tables
 // @desc    Get all tables
 // @access  Private (adjust access as needed, e.g., for waiters/admins)
-router.get('/', authMiddleware, async (req, res) => {
+router.get('/', protect, async (req, res) => {
   try {
     const tables = await Table.find().sort({ location: 1, tableNumber: 1 }); // Sort by location then number
     res.json(tables);
@@ -19,7 +19,7 @@ router.get('/', authMiddleware, async (req, res) => {
 // @route   GET api/tables/:id
 // @desc    Get table by ID
 // @access  Private
-router.get('/:id', authMiddleware, async (req, res) => {
+router.get('/:id', protect, async (req, res) => {
   try {
     const table = await Table.findById(req.params.id);
     if (!table) {
@@ -38,7 +38,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 // @route   POST api/tables
 // @desc    Create a new table
 // @access  Private (Admin only?)
-router.post('/', authMiddleware, async (req, res) => {
+router.post('/', protect, async (req, res) => {
   // Add role check if needed (e.g., if (req.user.role !== 'admin'))
   const { tableNumber, seats, location, status } = req.body;
 
@@ -67,7 +67,7 @@ router.post('/', authMiddleware, async (req, res) => {
 // @route   PUT api/tables/:id
 // @desc    Update a table (e.g., status, assigned waiter)
 // @access  Private
-router.put('/:id', authMiddleware, async (req, res) => {
+router.put('/:id', protect, async (req, res) => {
   const { seats, location, status, assignedWaiter } = req.body;
 
   // Build table object
@@ -103,7 +103,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
 // @route   DELETE api/tables/:id
 // @desc    Delete a table
 // @access  Private (Admin only?)
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', protect, async (req, res) => {
   // Add role check if needed
   try {
     const table = await Table.findById(req.params.id);
