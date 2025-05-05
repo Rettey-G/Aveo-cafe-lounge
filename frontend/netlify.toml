@@ -1,9 +1,18 @@
 [build]
-  base = "frontend"
-  command = "npm run build"
+  base = "/frontend"
   publish = "build"
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "16.0.0"
 
 [[redirects]]
   from = "/*"
   to = "/index.html"
-  status = 200 
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"

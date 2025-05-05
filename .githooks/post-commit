@@ -1,0 +1,4 @@
+#!/bin/sh
+# Automatically push to GitHub after commit
+branch=$(git rev-parse --abbrev-ref HEAD)
+git push origin $branch

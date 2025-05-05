@@ -15,8 +15,6 @@ const TableLayout = () => {
     location: 'Ground Floor' // Default location
   });
   const [selectedTable, setSelectedTable] = useState(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -117,59 +115,7 @@ const TableLayout = () => {
     setSelectedTable(table);
   };
 
-  const handleDragStart = (e, table) => {
-    setIsDragging(true);
-    setSelectedTable(table);
-    setDragStart({
-      x: e.clientX - table.position.x,
-      y: e.clientY - table.position.y
-    });
-  };
 
-  const handleDrag = (e) => {
-    if (!isDragging || !selectedTable) return;
-
-    const newPosition = {
-      x: e.clientX - dragStart.x,
-      y: e.clientY - dragStart.y
-    };
-
-    setTables(tables.map(table => 
-      table._id === selectedTable._id 
-        ? { ...table, position: newPosition }
-        : table
-    ));
-  };
-
-  const handleDragEnd = async () => {
-    if (!isDragging || !selectedTable) return;
-    setIsDragging(false);
-
-    try {
-      const token = localStorage.getItem('token');
-      await axios.put(
-        `${API_URL}/tables/${selectedTable._id}/position`,
-        { position: selectedTable.position },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-    } catch (err) {
-      setError('Failed to update table position');
-    }
-  };
-
-  const handleMergeTables = async (table1, table2) => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.post(
-        `${API_URL}/tables/merge`,
-        { table1Id: table1._id, table2Id: table2._id },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      fetchTables();
-    } catch (err) {
-      setError('Failed to merge tables');
-    }
-  };
 
   // Group tables by location
   const groupedTables = tables.reduce((acc, table) => {
@@ -185,7 +131,12 @@ const TableLayout = () => {
   if (error) return <div className="error">{error}</div>;
 
   return (
-    <div className="table-layout-page">
+    <div 
+      className="table-layout-page"
+      onMouseMove={handleDrag}
+      onMouseUp={handleDragEnd}
+      onMouseLeave={handleDragEnd}
+    >
       <h1>Table Layout & Management</h1>
       <button onClick={() => setShowAddModal(true)} className="add-table-btn">Add New Table</button>
 
@@ -202,8 +153,8 @@ const TableLayout = () => {
                 key={table._id}
                 className={`table-card status-${table.status?.toLowerCase() || 'unknown'} ${selectedTable?._id === table._id ? 'selected' : ''}`}
                 style={{
-                  left: `${table.position.x}px`,
-                  top: `${table.position.y}px`
+                  left: `${table.position?.x || 0}px`,
+                  top: `${table.position?.y || 0}px`
                 }}
                 onClick={() => handleTableClick(table)}
                 onMouseDown={(e) => handleDragStart(e, table)}
@@ -261,7 +212,7 @@ const TableLayout = () => {
             <form onSubmit={handleEditTable}>
               <label>
                 Table Number:
-                <input type="text" name="tableNumber" value={currentTable.tableNumber} onChange={handleInputChange} required disabled /* Usually table number is not editable */ />
+                <input type="text" name="tableNumber" value={currentTable.tableNumber} onChange={handleInputChange} required disabled />
               </label>
               <label>
                 Seats:
@@ -278,12 +229,11 @@ const TableLayout = () => {
               <label>
                 Status:
                 <select name="status" value={currentTable.status} onChange={handleInputChange}>
-                    <option value="available">Available</option>
-                    <option value="occupied">Occupied</option>
-                    <option value="reserved">Reserved</option>
+                  <option value="available">Available</option>
+                  <option value="occupied">Occupied</option>
+                  <option value="reserved">Reserved</option>
                 </select>
               </label>
-              {/* Add field for assignedWaiter if needed */}
               {error && <p className="error-message">{error}</p>}
               <div className="modal-actions">
                 <button type="submit">Save Changes</button>
