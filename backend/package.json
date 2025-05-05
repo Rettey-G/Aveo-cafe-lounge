@@ -1,7 +1,7 @@
 {
   "name": "aveo-cafe-backend",
   "version": "1.0.0",
-  "description": "Backend for Aveo Cafe application",
+  "description": "Backend for Aveo Cafe & Lounge application",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

@@ -1,6 +1,6 @@
-# Aveo Cafe Management System
+# Aveo Cafe & Lounge Management System
 
-A comprehensive cafe management system built with the MERN stack (MongoDB, Express.js, React, Node.js).
+A comprehensive cafe and lounge management system built with the MERN stack (MongoDB, Express.js, React, Node.js).
 
 ## Features
 
@@ -15,7 +15,7 @@ A comprehensive cafe management system built with the MERN stack (MongoDB, Expre
 ## Prerequisites
 
 - Node.js (v14 or higher)
-- MongoDB (local or Atlas)
+- MongoDB Atlas
 - npm or yarn
 
 ## Setup Instructions
@@ -37,7 +37,14 @@ A comprehensive cafe management system built with the MERN stack (MongoDB, Expre
    cp .env.example .env
    ```
 
-4. Update the `.env` file with your MongoDB connection string and other configurations.
+4. Update the `.env` file with your MongoDB Atlas connection string and other configurations:
+   ```
+   MONGO_URI=mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/aveo-cafe-lounge?retryWrites=true&w=majority
+   NODE_ENV=production
+   PORT=5000
+   JWT_SECRET=your_jwt_secret
+   FRONTEND_URL=https://aveo-cafe-lounge.netlify.app
+   ```
 
 5. Start the backend server:
    ```bash
@@ -61,27 +68,30 @@ A comprehensive cafe management system built with the MERN stack (MongoDB, Expre
    cp .env.example .env
    ```
 
-4. Update the `.env` file with your backend API URL.
+4. Update the `.env` file with your backend API URL:
+   ```
+   REACT_APP_API_URL=https://aveo-cafe-backend.onrender.com/api
+   ```
 
 5. Start the frontend development server:
    ```bash
    npm start
    ```
 
-## MongoDB Setup
+## MongoDB Atlas Setup
 
-### Option 1: Local MongoDB
-
-1. Install MongoDB locally
-2. Start MongoDB service
-3. Use connection string: `mongodb://localhost:27017/aveo-cafe`
-
-### Option 2: MongoDB Atlas
-
-1. Create a MongoDB Atlas account
-2. Create a new cluster
-3. Add your IP address to the whitelist
+1. Create a MongoDB Atlas account at https://www.mongodb.com/cloud/atlas
+2. Create a new cluster (the free tier is sufficient for development)
+3. Set up database access:
+   - Create a database user with read/write permissions
+   - Add your IP address to the IP whitelist
 4. Get your connection string and update it in the backend `.env` file
+5. Create the following collections in your database:
+   - users
+   - menuItems
+   - tables
+   - orders
+   - invoices
 
 ## Features in Detail
 
@@ -116,8 +126,8 @@ A comprehensive cafe management system built with the MERN stack (MongoDB, Expre
 
 ## Development
 
-- Backend runs on: http://localhost:5000
-- Frontend runs on: http://localhost:3000
+- Backend runs on: https://aveo-cafe-backend.onrender.com
+- Frontend runs on: https://aveo-cafe-lounge.netlify.app
 
 ## Contributing
 

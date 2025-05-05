@@ -122,11 +122,11 @@ const InvoicePage = () => {
   };
 
   return (
-    <div className="invoice-page">
+    <div className="invoice-container">
       <div className="invoice-header">
-        <h1>Aveo Cafe Invoice</h1>
-        <div className="invoice-info">
-          <p>Invoice Number: {invoiceNumber}</p>
+        <h1>Aveo Cafe & Lounge Invoice</h1>
+        <div className="invoice-details">
+          <p>Invoice #: {invoiceNumber}</p>
           <p>Date: {new Date().toLocaleDateString()}</p>
         </div>
       </div>

@@ -1,9 +1,10 @@
 .navbar {
-  background-color: #333;
+  background-color: #1a1a1a;
   padding: 1rem 0;
   position: sticky;
   top: 0;
   z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .navbar-container {
@@ -12,7 +13,7 @@
   align-items: center;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 2rem;
 }
 
 .navbar-logo {
@@ -20,11 +21,15 @@
   text-decoration: none;
   font-size: 1.5rem;
   font-weight: bold;
-  transition: color 0.3s ease;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .navbar-logo:hover {
   color: #ffd700;
+  transform: scale(1.05);
 }
 
 .nav-menu {
@@ -32,19 +37,22 @@
   list-style: none;
   margin: 0;
   padding: 0;
+  gap: 2rem;
 }
 
 .nav-item {
-  margin-left: 2rem;
+  position: relative;
 }
 
 .nav-links {
   color: #fff;
   text-decoration: none;
   font-size: 1rem;
-  transition: color 0.3s ease;
+  font-weight: 500;
+  transition: all 0.3s ease;
   padding: 0.5rem 0;
   position: relative;
+  display: inline-block;
 }
 
 .nav-links:hover {
@@ -66,19 +74,62 @@
   width: 100%;
 }
 
+.mobile-menu-icon {
+  display: none;
+  color: #fff;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
 @media (max-width: 768px) {
   .navbar-container {
-    flex-direction: column;
-    padding: 1rem;
+    padding: 0 1rem;
+  }
+
+  .mobile-menu-icon {
+    display: block;
   }
 
   .nav-menu {
-    margin-top: 1rem;
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #1a1a1a;
     flex-direction: column;
     align-items: center;
+    padding: 1rem 0;
+    gap: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .nav-menu.active {
+    display: flex;
   }
 
   .nav-item {
-    margin: 0.5rem 0;
+    width: 100%;
+    text-align: center;
+    padding: 0.5rem 0;
+  }
+
+  .nav-links {
+    display: block;
+    padding: 0.5rem 1rem;
+  }
+
+  .nav-links::after {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-logo {
+    font-size: 1.2rem;
+  }
+
+  .nav-links {
+    font-size: 0.9rem;
   }
 } 

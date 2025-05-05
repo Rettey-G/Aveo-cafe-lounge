@@ -4,30 +4,27 @@ import './Home.css';
 
 function Home() {
   return (
-    <div className="home">
-      <section className="hero">
-        <div className="hero-content">
-          <h1>Welcome to Aveo Cafe</h1>
-          <p>Experience the perfect blend of taste and comfort</p>
-          <Link to="/menu" className="cta-button">View Menu</Link>
+    <div className="home-container">
+      <div className="hero-section">
+        <h1>Welcome to Aveo Cafe & Lounge</h1>
+        <p>Experience the perfect blend of coffee, food, and ambiance</p>
+        <Link to="/menu" className="cta-button">View Our Menu</Link>
+      </div>
+
+      <div className="features-section">
+        <div className="feature-card">
+          <h3>Fresh Coffee</h3>
+          <p>Handcrafted beverages made with premium beans</p>
         </div>
-      </section>
-      <section className="features">
-        <div className="features-grid">
-          <div className="feature-card">
-            <h3>Fresh Coffee</h3>
-            <p>Brewed to perfection</p>
-          </div>
-          <div className="feature-card">
-            <h3>Delicious Food</h3>
-            <p>Made with love</p>
-          </div>
-          <div className="feature-card">
-            <h3>Cozy Atmosphere</h3>
-            <p>Perfect for work or relaxation</p>
-          </div>
+        <div className="feature-card">
+          <h3>Delicious Food</h3>
+          <p>Freshly prepared meals and pastries</p>
         </div>
-      </section>
+        <div className="feature-card">
+          <h3>Cozy Atmosphere</h3>
+          <p>Perfect for work, meetings, or relaxation</p>
+        </div>
+      </div>
     </div>
   );
 }

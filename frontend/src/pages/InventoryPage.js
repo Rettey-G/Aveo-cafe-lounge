@@ -1,19 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import './InventoryPage.css'; // We'll create this file next
 
 const InventoryPage = () => {
   const [menuItems, setMenuItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
-  // Fetch menu items on component mount
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
     const fetchMenuItems = async () => {
       try {
-        const token = localStorage.getItem('token');
         const config = {
           headers: {
             'Content-Type': 'application/json',
@@ -24,14 +30,19 @@ const InventoryPage = () => {
         setMenuItems(data);
         setLoading(false);
       } catch (err) {
-        setError('Failed to fetch inventory items.');
-        console.error(err);
+        if (err.response?.status === 401) {
+          localStorage.removeItem('token');
+          navigate('/login');
+        } else {
+          setError('Failed to fetch inventory items.');
+          console.error(err);
+        }
         setLoading(false);
       }
     };
 
     fetchMenuItems();
-  }, [API_URL]);
+  }, [API_URL, navigate]);
 
   // Function to handle stock update
   const handleStockUpdate = async (id, newStock) => {
@@ -42,6 +53,10 @@ const InventoryPage = () => {
     }
     try {
       const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
       const config = {
         headers: {
           'Content-Type': 'application/json',
@@ -58,48 +73,55 @@ const InventoryPage = () => {
         )
       );
     } catch (err) {
-      setError('Failed to update stock quantity.');
-      console.error(err);
+      if (err.response?.status === 401) {
+        localStorage.removeItem('token');
+        navigate('/login');
+      } else {
+        setError('Failed to update stock quantity.');
+        console.error(err);
+      }
       // Optionally: revert local state change or show specific error
     }
   };
 
-  if (loading) return <div>Loading inventory...</div>;
+  if (loading) return <div className="loading">Loading inventory...</div>;
   if (error) return <div className="error-message">Error: {error}</div>;
 
   return (
     <div className="inventory-container">
       <h2>Inventory Management</h2>
-      <table className="inventory-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Category</th>
-            <th>Price</th>
-            <th>Current Stock</th>
-            <th>Update Stock</th>
-          </tr>
-        </thead>
-        <tbody>
-          {menuItems.map(item => (
-            <tr key={item._id}>
-              <td>{item.name}</td>
-              <td>{item.category}</td>
-              <td>${item.price.toFixed(2)}</td>
-              <td>{item.stockQuantity}</td>
-              <td>
-                <input
-                  type="number"
-                  min="0"
-                  defaultValue={item.stockQuantity}
-                  onBlur={(e) => handleStockUpdate(item._id, parseInt(e.target.value, 10))}
-                  className="stock-input"
-                />
-              </td>
+      <div className="inventory-table-container">
+        <table className="inventory-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Current Stock</th>
+              <th>Update Stock</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {menuItems.map(item => (
+              <tr key={item._id}>
+                <td>{item.name}</td>
+                <td>{item.category}</td>
+                <td>${item.price.toFixed(2)}</td>
+                <td>{item.stockQuantity}</td>
+                <td>
+                  <input
+                    type="number"
+                    min="0"
+                    defaultValue={item.stockQuantity}
+                    onBlur={(e) => handleStockUpdate(item._id, parseInt(e.target.value, 10))}
+                    className="stock-input"
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
