@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Login.css';
@@ -14,6 +14,14 @@ const Login = () => {
 
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
+  // Check if user is already logged in
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      navigate('/');
+    }
+  }, [navigate]);
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -28,8 +36,18 @@ const Login = () => {
 
     try {
       const response = await axios.post(`${API_URL}/auth/login`, formData);
-      localStorage.setItem('token', response.data.token);
-      navigate('/');
+      const { token, role } = response.data;
+      
+      // Store token and role
+      localStorage.setItem('token', token);
+      localStorage.setItem('userRole', role);
+      
+      // Redirect based on role
+      if (role === 'admin') {
+        navigate('/inventory');
+      } else {
+        navigate('/');
+      }
     } catch (err) {
       setError(err.response?.data?.msg || 'Login failed. Please try again.');
     } finally {
@@ -41,6 +59,9 @@ const Login = () => {
     <div className="login-container">
       <div className="login-box">
         <h2>Login to Aveo Cafe & Lounge</h2>
+        <p className="login-info">Default admin credentials:</p>
+        <p className="login-info">Username: admin</p>
+        <p className="login-info">Password: admin123</p>
         {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">

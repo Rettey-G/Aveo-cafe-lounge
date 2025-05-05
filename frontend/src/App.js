@@ -12,12 +12,19 @@ import InvoicePage from './pages/InvoicePage';
 import Login from './pages/Login';
 import './App.css';
 
-// Protected Route component
-const ProtectedRoute = ({ children }) => {
+// Protected Route component with role check
+const ProtectedRoute = ({ children, requireAdmin = false }) => {
   const token = localStorage.getItem('token');
+  const userRole = localStorage.getItem('userRole');
+
   if (!token) {
     return <Navigate to="/login" replace />;
   }
+
+  if (requireAdmin && userRole !== 'admin') {
+    return <Navigate to="/" replace />;
+  }
+
   return children;
 };
 
@@ -28,17 +35,24 @@ function App() {
         <Navbar />
         <main className="main-content">
           <Routes>
-            <Route path="/" element={<Home />} />
+            {/* Redirect root to login if not authenticated */}
+            <Route path="/" element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            } />
+            
+            {/* Public routes */}
+            <Route path="/login" element={<Login />} />
             <Route path="/menu" element={<Menu />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/login" element={<Login />} />
             
-            {/* Protected Routes */}
+            {/* Admin only routes */}
             <Route 
               path="/inventory" 
               element={
-                <ProtectedRoute>
+                <ProtectedRoute requireAdmin={true}>
                   <InventoryPage />
                 </ProtectedRoute>
               } 
@@ -46,7 +60,7 @@ function App() {
             <Route 
               path="/table-layout" 
               element={
-                <ProtectedRoute>
+                <ProtectedRoute requireAdmin={true}>
                   <TableLayout />
                 </ProtectedRoute>
               } 
@@ -54,7 +68,7 @@ function App() {
             <Route 
               path="/take-order" 
               element={
-                <ProtectedRoute>
+                <ProtectedRoute requireAdmin={true}>
                   <OrderTakingPage />
                 </ProtectedRoute>
               } 
@@ -62,7 +76,7 @@ function App() {
             <Route 
               path="/invoice" 
               element={
-                <ProtectedRoute>
+                <ProtectedRoute requireAdmin={true}>
                   <InvoicePage />
                 </ProtectedRoute>
               } 
