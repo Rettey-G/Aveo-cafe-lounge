@@ -14,6 +14,9 @@ const TableLayout = () => {
     seats: '',
     location: 'Ground Floor' // Default location
   });
+  const [selectedTable, setSelectedTable] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -21,9 +24,9 @@ const TableLayout = () => {
   const fetchTables = useCallback(async () => {
     setLoading(true);
     try {
-      // Replace with your actual API endpoint and auth mechanism
+      const token = localStorage.getItem('token');
       const res = await axios.get(`${API_URL}/tables`, {
-        // headers: { Authorization: `Bearer ${token}` } // Add auth if needed
+        headers: { Authorization: `Bearer ${token}` }
       });
       setTables(res.data);
       setError(null);
@@ -54,8 +57,9 @@ const TableLayout = () => {
   const handleAddTable = async (e) => {
     e.preventDefault();
     try {
+      const token = localStorage.getItem('token');
       const res = await axios.post(`${API_URL}/tables`, newTableData, {
-        // headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
       setTables([...tables, res.data]);
       setShowAddModal(false);
@@ -72,8 +76,9 @@ const TableLayout = () => {
     e.preventDefault();
     if (!currentTable) return;
     try {
+      const token = localStorage.getItem('token');
       const res = await axios.put(`${API_URL}/tables/${currentTable._id}`, currentTable, {
-        // headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
       setTables(tables.map(t => t._id === currentTable._id ? res.data : t));
       setShowEditModal(false);
@@ -89,8 +94,9 @@ const TableLayout = () => {
   const handleDeleteTable = async (id) => {
     if (window.confirm('Are you sure you want to delete this table?')) {
       try {
+        const token = localStorage.getItem('token');
         await axios.delete(`${API_URL}/tables/${id}`, {
-          // headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` }
         });
         setTables(tables.filter(t => t._id !== id));
         setError(null);
@@ -107,6 +113,64 @@ const TableLayout = () => {
     setShowEditModal(true);
   };
 
+  const handleTableClick = (table) => {
+    setSelectedTable(table);
+  };
+
+  const handleDragStart = (e, table) => {
+    setIsDragging(true);
+    setSelectedTable(table);
+    setDragStart({
+      x: e.clientX - table.position.x,
+      y: e.clientY - table.position.y
+    });
+  };
+
+  const handleDrag = (e) => {
+    if (!isDragging || !selectedTable) return;
+
+    const newPosition = {
+      x: e.clientX - dragStart.x,
+      y: e.clientY - dragStart.y
+    };
+
+    setTables(tables.map(table => 
+      table._id === selectedTable._id 
+        ? { ...table, position: newPosition }
+        : table
+    ));
+  };
+
+  const handleDragEnd = async () => {
+    if (!isDragging || !selectedTable) return;
+    setIsDragging(false);
+
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(
+        `${API_URL}/tables/${selectedTable._id}/position`,
+        { position: selectedTable.position },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+    } catch (err) {
+      setError('Failed to update table position');
+    }
+  };
+
+  const handleMergeTables = async (table1, table2) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(
+        `${API_URL}/tables/merge`,
+        { table1Id: table1._id, table2Id: table2._id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      fetchTables();
+    } catch (err) {
+      setError('Failed to merge tables');
+    }
+  };
+
   // Group tables by location
   const groupedTables = tables.reduce((acc, table) => {
     const location = table.location || 'Unspecified';
@@ -117,13 +181,13 @@ const TableLayout = () => {
     return acc;
   }, {});
 
+  if (loading) return <div className="loading">Loading tables...</div>;
+  if (error) return <div className="error">{error}</div>;
+
   return (
     <div className="table-layout-page">
       <h1>Table Layout & Management</h1>
       <button onClick={() => setShowAddModal(true)} className="add-table-btn">Add New Table</button>
-
-      {loading && <p>Loading tables...</p>}
-      {error && <p className="error-message">{error}</p>}
 
       {!loading && !error && Object.keys(groupedTables).length === 0 && (
         <p>No tables found. Add a table to get started.</p>
@@ -134,15 +198,22 @@ const TableLayout = () => {
           <h2>{location}</h2>
           <div className="table-grid">
             {tablesInLocation.map(table => (
-              <div key={table._id} className={`table-card status-${table.status?.toLowerCase() || 'unknown'}`}>
+              <div
+                key={table._id}
+                className={`table-card status-${table.status?.toLowerCase() || 'unknown'} ${selectedTable?._id === table._id ? 'selected' : ''}`}
+                style={{
+                  left: `${table.position.x}px`,
+                  top: `${table.position.y}px`
+                }}
+                onClick={() => handleTableClick(table)}
+                onMouseDown={(e) => handleDragStart(e, table)}
+              >
                 <h3>Table {table.tableNumber}</h3>
                 <p>Seats: {table.seats}</p>
                 <p>Status: {table.status || 'N/A'}</p>
-                {/* Add assigned waiter info if available */}
-                {/* {table.assignedWaiter && <p>Waiter: {table.assignedWaiter.name}</p>} */}
                 <div className="table-actions">
-                  <button onClick={() => openEditModal(table)} className="edit-btn">Edit</button>
-                  <button onClick={() => handleDeleteTable(table._id)} className="delete-btn">Delete</button>
+                  <button onClick={(e) => { e.stopPropagation(); openEditModal(table); }} className="edit-btn">Edit</button>
+                  <button onClick={(e) => { e.stopPropagation(); handleDeleteTable(table._id); }} className="delete-btn">Delete</button>
                 </div>
               </div>
             ))}
@@ -220,6 +291,14 @@ const TableLayout = () => {
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {selectedTable && (
+        <div className="table-actions">
+          <button onClick={(e) => { e.stopPropagation(); handleMergeTables(selectedTable, tables.find(t => t._id !== selectedTable._id)); }}>
+            Merge with Another Table
+          </button>
         </div>
       )}
     </div>
