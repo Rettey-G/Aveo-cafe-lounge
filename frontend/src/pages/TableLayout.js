@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios'; // Assuming axios is used for API calls
 import './TableLayout.css'; // We'll create this CSS file next
 
@@ -18,7 +18,7 @@ const TableLayout = () => {
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
   // Fetch tables
-  const fetchTables = async () => {
+  const fetchTables = useCallback(async () => {
     setLoading(true);
     try {
       // Replace with your actual API endpoint and auth mechanism
@@ -34,11 +34,11 @@ const TableLayout = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_URL]);
 
   useEffect(() => {
     fetchTables();
-  }, []);
+  }, [fetchTables]);
 
   // Handle Input Change for Add/Edit Modals
   const handleInputChange = (e) => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './OrderTakingPage.css'; // We'll create this CSS file next
 
@@ -15,7 +15,7 @@ const OrderTakingPage = () => {
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
   // Fetch available tables
-  const fetchTables = async () => {
+  const fetchTables = useCallback(async () => {
     setLoadingTables(true);
     try {
       const res = await axios.get(`${API_URL}/tables?status=available`); // Fetch only available tables
@@ -28,10 +28,10 @@ const OrderTakingPage = () => {
     } finally {
       setLoadingTables(false);
     }
-  };
+  }, [API_URL]);
 
   // Fetch menu items
-  const fetchMenuItems = async () => {
+  const fetchMenuItems = useCallback(async () => {
     setLoadingMenu(true);
     try {
       const res = await axios.get(`${API_URL}/menu-items`);
@@ -44,12 +44,12 @@ const OrderTakingPage = () => {
     } finally {
       setLoadingMenu(false);
     }
-  };
+  }, [API_URL]);
 
   useEffect(() => {
     fetchTables();
     fetchMenuItems();
-  }, []);
+  }, [fetchTables, fetchMenuItems]);
 
   // Add item to current order
   const addItemToOrder = (item) => {
