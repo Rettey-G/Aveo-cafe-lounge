@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 
 const OrderSchema = new mongoose.Schema({
-  tableNumber: {
-    type: String,
-    required: true,
-    trim: true
+  table: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Table',
+    required: true
   },
   items: [{
     menuItem: {

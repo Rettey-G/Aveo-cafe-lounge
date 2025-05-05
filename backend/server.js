@@ -3,7 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const connectDB = require('./db'); // Correct path to db connection logic
+const connectDB = require('./config/db'); // Updated path to db connection logic
+const { startInventoryChecks } = require('./utils/notifications');
 
 // Debug logging
 console.log('Environment variables loaded:');
@@ -13,6 +14,9 @@ console.log('PORT:', process.env.PORT);
 
 // Connect Database
 connectDB();
+
+// Start inventory checks
+startInventoryChecks();
 
 const app = express();
 
@@ -56,7 +60,9 @@ app.get('/api/status', (req, res) => {
 // Define Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/menu-items', require('./routes/menuItems'));
-app.use('/api/orders', require('./routes/orders')); // Add the new orders route
+app.use('/api/orders', require('./routes/orders'));
+app.use('/api/tables', require('./routes/tables'));
+app.use('/api/invoices', require('./routes/invoices')); // Add invoice routes
 
 // Handle 404 routes
 app.use((req, res) => {
