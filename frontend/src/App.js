@@ -1,32 +1,74 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Menu from './pages/Menu';
 import About from './pages/About';
 import Contact from './pages/Contact';
-import InventoryPage from './pages/InventoryPage'; // Import the new page
-import TableLayout from './pages/TableLayout'; // Import the Table Layout page
-import OrderTakingPage from './pages/OrderTakingPage'; // Import the Order Taking page
+import InventoryPage from './pages/InventoryPage';
+import TableLayout from './pages/TableLayout';
+import OrderTakingPage from './pages/OrderTakingPage';
 import InvoicePage from './pages/InvoicePage';
+import Login from './pages/Login';
 import './App.css';
+
+// Protected Route component
+const ProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+};
 
 function App() {
   return (
     <Router>
-      <Navbar />
-      <div className="container">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/menu" element={<Menu />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/inventory" element={<InventoryPage />} /> {/* Add route for Inventory Page */}
-          <Route path="/tables" element={<TableLayout />} /> {/* Add route for Table Layout Page */}
-          <Route path="/order" element={<OrderTakingPage />} /> {/* Add route for Order Taking Page */}
-          <Route path="/invoice" element={<InvoicePage />} />
-          {/* Add other routes as needed */}
-        </Routes>
+      <div className="app">
+        <Navbar />
+        <main className="main-content">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/menu" element={<Menu />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/login" element={<Login />} />
+            
+            {/* Protected Routes */}
+            <Route 
+              path="/inventory" 
+              element={
+                <ProtectedRoute>
+                  <InventoryPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/table-layout" 
+              element={
+                <ProtectedRoute>
+                  <TableLayout />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/take-order" 
+              element={
+                <ProtectedRoute>
+                  <OrderTakingPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/invoice" 
+              element={
+                <ProtectedRoute>
+                  <InvoicePage />
+                </ProtectedRoute>
+              } 
+            />
+          </Routes>
+        </main>
       </div>
     </Router>
   );

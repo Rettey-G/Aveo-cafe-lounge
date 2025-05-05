@@ -13,7 +13,7 @@ body {
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 1rem;
 }
 
 /* Navbar Styles */
@@ -117,4 +117,29 @@ body {
 
 .feature p {
   color: #666;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  padding: 2rem 0;
+  background-color: #f8f9fa;
+}
+
+/* Add responsive breakpoints */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 1rem 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding: 0.5rem 0;
+  }
 }

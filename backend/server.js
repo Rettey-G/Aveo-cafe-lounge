@@ -3,8 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const connectDB = require('./config/db'); // Updated path to db connection logic
-const { startInventoryChecks } = require('./utils/notifications');
+const connectDB = require('./db'); // Correct path to db connection logic
 
 // Debug logging
 console.log('Environment variables loaded:');
@@ -15,18 +14,12 @@ console.log('PORT:', process.env.PORT);
 // Connect Database
 connectDB();
 
-// Start inventory checks
-startInventoryChecks();
-
 const app = express();
 
 // Security Middleware
 app.use(helmet()); // Adds various HTTP headers for security
 app.use(cors({
-  origin: [
-    process.env.FRONTEND_URL || 'http://localhost:3000',
-    'https://aveo-cafe-lounge.netlify.app'
-  ],
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
   credentials: true
 }));
 
@@ -63,9 +56,8 @@ app.get('/api/status', (req, res) => {
 // Define Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/menu-items', require('./routes/menuItems'));
-app.use('/api/orders', require('./routes/orders'));
-app.use('/api/tables', require('./routes/tables'));
-app.use('/api/invoices', require('./routes/invoices')); // Add invoice routes
+app.use('/api/orders', require('./routes/orders')); // Add the new orders route
+app.use('/api/tables', require('./routes/tables')); // Add the new tables route
 
 // Handle 404 routes
 app.use((req, res) => {
