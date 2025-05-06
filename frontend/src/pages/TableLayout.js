@@ -15,6 +15,8 @@ const TableLayout = () => {
     location: 'Ground Floor' // Default location
   });
   const [selectedTable, setSelectedTable] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -115,7 +117,59 @@ const TableLayout = () => {
     setSelectedTable(table);
   };
 
+  const handleDragStart = (e, table) => {
+    setIsDragging(true);
+    setSelectedTable(table);
+    setDragStart({
+      x: e.clientX - (table.position?.x || 0),
+      y: e.clientY - (table.position?.y || 0)
+    });
+  };
 
+  const handleDrag = useCallback((e) => {
+    if (!isDragging || !selectedTable) return;
+
+    const newPosition = {
+      x: e.clientX - dragStart.x,
+      y: e.clientY - dragStart.y
+    };
+
+    setTables(tables.map(table => 
+      table._id === selectedTable._id 
+        ? { ...table, position: newPosition }
+        : table
+    ));
+  }, [isDragging, selectedTable, dragStart, tables]);
+
+  const handleDragEnd = useCallback(async () => {
+    if (!isDragging || !selectedTable) return;
+    setIsDragging(false);
+
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(
+        `${API_URL}/tables/${selectedTable._id}/position`,
+        { position: selectedTable.position },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+    } catch (err) {
+      setError('Failed to update table position');
+    }
+  }, [isDragging, selectedTable, API_URL]);
+
+  const handleMergeTables = async (table1, table2) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(
+        `${API_URL}/tables/merge`,
+        { table1Id: table1._id, table2Id: table2._id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      fetchTables();
+    } catch (err) {
+      setError('Failed to merge tables');
+    }
+  };
 
   // Group tables by location
   const groupedTables = tables.reduce((acc, table) => {

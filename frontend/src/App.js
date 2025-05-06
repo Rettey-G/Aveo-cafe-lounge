@@ -32,9 +32,9 @@ function App() {
   return (
     <Router>
       <div className="app">
-        <Navbar />
+      <Navbar />
         <main className="main-content">
-          <Routes>
+        <Routes>
             {/* Redirect root to login if not authenticated */}
             <Route path="/" element={
               <ProtectedRoute>
@@ -44,9 +44,9 @@ function App() {
             
             {/* Public routes */}
             <Route path="/login" element={<Login />} />
-            <Route path="/menu" element={<Menu />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
+          <Route path="/menu" element={<Menu />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
             
             {/* Admin only routes */}
             <Route 
@@ -81,7 +81,7 @@ function App() {
                 </ProtectedRoute>
               } 
             />
-          </Routes>
+        </Routes>
         </main>
       </div>
     </Router>
