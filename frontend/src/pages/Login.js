@@ -12,7 +12,8 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+  // Ensure API_URL includes /api
+  const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '') + '/api';
 
   // Check if user is already logged in
   useEffect(() => {
@@ -35,6 +36,7 @@ const Login = () => {
     setLoading(true);
 
     try {
+      console.log('Attempting login with URL:', `${API_URL}/auth/login`);
       const response = await axios.post(`${API_URL}/auth/login`, formData);
       const { token, role } = response.data;
       
@@ -49,6 +51,7 @@ const Login = () => {
         navigate('/');
       }
     } catch (err) {
+      console.error('Login error:', err);
       setError(err.response?.data?.msg || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
@@ -59,9 +62,9 @@ const Login = () => {
     <div className="login-container">
       <div className="login-box">
         <h2>Login to Aveo Cafe & Lounge</h2>
-        <p className="login-info">Default admin credentials:</p>
-        <p className="login-info">Username: admin</p>
-        <p className="login-info">Password: admin123</p>
+        <p className="login-info">Admin credentials:</p>
+        <p className="login-info">Username: ahusam</p>
+        <p className="login-info">Password: ahusam123</p>
         {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
