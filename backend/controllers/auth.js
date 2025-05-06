@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const crypto = require('crypto');
 
 // @desc    Login user
 // @route   POST /api/auth/login
@@ -67,11 +68,16 @@ exports.createAdmin = async (req, res) => {
     }
 
     // Create admin user
+    const generatedPassword = crypto.randomBytes(12).toString('base64');
     const admin = await User.create({
       username: 'admin',
-      password: 'admin123',
+      password: generatedPassword,
       role: 'admin'
     });
+
+    console.log('Admin user created successfully');
+    console.log('Username: admin');
+    console.log('Password:', generatedPassword);
 
     res.status(201).json({
       success: true,

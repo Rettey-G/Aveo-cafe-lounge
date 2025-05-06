@@ -5,6 +5,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const connectDB = require('./db'); // Correct path to db connection logic
 const mongoose = require('mongoose');
+const crypto = require('crypto');
 
 // Debug logging
 console.log('Environment variables loaded:');
@@ -72,12 +73,15 @@ const createInitialAdmin = async () => {
   try {
     const adminExists = await User.findOne({ role: 'admin' });
     if (!adminExists) {
+      const generatedPassword = crypto.randomBytes(12).toString('base64');
       await User.create({
         username: 'admin',
-        password: 'admin123',
+        password: generatedPassword,
         role: 'admin'
       });
       console.log('Initial admin user created');
+      console.log('Username: admin');
+      console.log('Password:', generatedPassword);
     }
   } catch (err) {
     console.error('Error creating initial admin:', err);
