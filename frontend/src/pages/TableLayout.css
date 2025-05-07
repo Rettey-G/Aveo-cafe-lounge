@@ -281,17 +281,62 @@
 
 .table-item.available {
   background-color: #e8f5e9;
-  border: 2px solid #28a745;
+  border: 4px solid #28a745;
+  position: relative;
+}
+
+.table-item.available::before {
+  content: 'Available';
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #28a745;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  white-space: nowrap;
 }
 
 .table-item.occupied {
   background-color: #ffebee;
-  border: 2px solid #dc3545;
+  border: 4px solid #dc3545;
+  position: relative;
+}
+
+.table-item.occupied::before {
+  content: 'Occupied';
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #dc3545;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  white-space: nowrap;
 }
 
 .table-item.reserved {
   background-color: #fff8e1;
-  border: 2px solid #ffc107;
+  border: 4px solid #ffc107;
+  position: relative;
+}
+
+.table-item.reserved::before {
+  content: 'Reserved';
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #ffc107;
+  color: black;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  white-space: nowrap;
 }
 
 .table-number {
@@ -334,6 +379,20 @@
 
 .table-actions button:hover {
   opacity: 1;
+}
+
+/* Cursor and dragging styles */
+.dragging-table {
+  cursor: grabbing !important;
+}
+
+.dragging-table * {
+  cursor: grabbing !important;
+}
+
+/* Highlight tables when dragging */
+.table-item.selected {
+  z-index: 100 !important;
 }
 
 /* Responsive design */

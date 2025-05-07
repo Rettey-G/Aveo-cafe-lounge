@@ -111,10 +111,20 @@ const TableLayout = () => {
   const handleDragStart = (e, table) => {
     setIsDragging(true);
     setSelectedTable(table);
+    
+    // Set the drag start position
     setDragStart({
       x: e.clientX - (table.position?.x || 0),
       y: e.clientY - (table.position?.y || 0)
     });
+    
+    // Add a class to the body to show dragging cursor everywhere
+    document.body.classList.add('dragging-table');
+    
+    // Add visual feedback
+    e.currentTarget.style.zIndex = 1000;
+    e.currentTarget.style.opacity = 0.8;
+    e.currentTarget.style.boxShadow = '0 10px 20px rgba(0,0,0,0.3)';
   };
 
   const handleDrag = useCallback((e) => {
@@ -136,15 +146,28 @@ const TableLayout = () => {
     if (!isDragging || !selectedTable) return;
     setIsDragging(false);
 
-    try {
-      await api.put(
-        `/tables/${selectedTable._id}/position`,
-        { position: selectedTable.position }
-      );
-    } catch (err) {
-      setError('Failed to update table position');
+    // Remove the dragging class from the body
+    document.body.classList.remove('dragging-table');
+
+    // Reset the styles on the dragged element
+    const draggedElement = document.querySelector(`.table-item.selected`);
+    if (draggedElement) {
+      draggedElement.style.zIndex = '';
+      draggedElement.style.opacity = '';
+      draggedElement.style.boxShadow = '';
     }
-  }, [isDragging, selectedTable]);
+
+    try {
+      const tableToUpdate = tables.find(t => t._id === selectedTable._id);
+      if (tableToUpdate && tableToUpdate.position) {
+        await api.put(`/tables/${tableToUpdate._id}`, { 
+          position: tableToUpdate.position 
+        });
+      }
+    } catch (err) {
+      console.error('Error updating table position:', err);
+    }
+  }, [isDragging, selectedTable, tables]);
 
   const handleMergeTables = async (table1, table2) => {
     try {
