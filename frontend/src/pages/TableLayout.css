@@ -279,17 +279,17 @@
   box-shadow: 0 0 0 3px #007bff, 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
-.table-item.status-available {
+.table-item.available {
   background-color: #e8f5e9;
   border: 2px solid #28a745;
 }
 
-.table-item.status-occupied {
+.table-item.occupied {
   background-color: #ffebee;
   border: 2px solid #dc3545;
 }
 
-.table-item.status-reserved {
+.table-item.reserved {
   background-color: #fff8e1;
   border: 2px solid #ffc107;
 }

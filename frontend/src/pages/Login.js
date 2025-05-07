@@ -5,23 +5,28 @@ import './Login.css';
 
 const Login = () => {
   const [formData, setFormData] = useState({
-    username: '',
-    password: ''
+    username: 'ahusam',
+    password: 'ahusam123'
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [autoLogin, setAutoLogin] = useState(true);
   const navigate = useNavigate();
 
   // Ensure API_URL includes /api
   const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '') + '/api';
 
-  // Check if user is already logged in
+  // Check if user is already logged in and auto-login if needed
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
       navigate('/');
+    } else if (autoLogin) {
+      // Auto login with admin credentials
+      handleSubmit({ preventDefault: () => {} });
+      setAutoLogin(false);
     }
-  }, [navigate]);
+  }, [navigate, autoLogin]);
 
   const handleChange = (e) => {
     setFormData({

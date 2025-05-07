@@ -357,11 +357,12 @@ const InventoryPage = () => {
           <tbody>
             {inventoryItems.map(item => (
               <tr key={item._id}>
-                <td className="item-image">
+                <td>
                   {item.image ? (
                     <img 
-                      src={item.image.startsWith('http') ? item.image : `${api.defaults.baseURL.replace('/api', '')}${item.image}`} 
-                      alt={item.name} 
+                      src={item.image.startsWith('http') ? item.image : `https://aveo-cafe-backend.onrender.com${item.image.startsWith('/') ? item.image : `/uploads/${item.image}`}`} 
+                      alt={item.name}
+                      className="inventory-image"
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100" style="background:%23eee"%3E%3Ctext x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14px" fill="%23999"%3ENo Image%3C/text%3E%3C/svg%3E';

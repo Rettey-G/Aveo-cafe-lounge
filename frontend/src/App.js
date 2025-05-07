@@ -11,6 +11,7 @@ import OrderTakingPage from './pages/OrderTakingPage';
 import InvoicePage from './pages/InvoicePage';
 import AllInvoicesPage from './pages/AllInvoicesPage';
 import OrdersPage from './pages/OrdersPage';
+import MenuManagementPage from './pages/MenuManagementPage';
 import UserManagement from './pages/UserManagement';
 import Login from './pages/Login';
 import './App.css';
@@ -91,6 +92,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={['admin', 'manager', 'waiter']}>
                   <OrdersPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/menu-management" 
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'manager']}>
+                  <MenuManagementPage />
                 </ProtectedRoute>
               } 
             />
