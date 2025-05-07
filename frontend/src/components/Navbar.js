@@ -4,6 +4,8 @@ import './Navbar.css';
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // Temporarily not using userRole since we're showing all links
+  // eslint-disable-next-line no-unused-vars
   const [userRole, setUserRole] = useState('');
   const navigate = useNavigate();
 
