@@ -9,11 +9,12 @@ import InventoryPage from './pages/InventoryPage';
 import TableLayout from './pages/TableLayout';
 import OrderTakingPage from './pages/OrderTakingPage';
 import InvoicePage from './pages/InvoicePage';
+import UserManagement from './pages/UserManagement';
 import Login from './pages/Login';
 import './App.css';
 
 // Protected Route component with role check
-const ProtectedRoute = ({ children, requireAdmin = false }) => {
+const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   const token = localStorage.getItem('token');
   const userRole = localStorage.getItem('userRole');
 
@@ -21,7 +22,7 @@ const ProtectedRoute = ({ children, requireAdmin = false }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (requireAdmin && userRole !== 'admin') {
+  if (allowedRoles.length > 0 && !allowedRoles.includes(userRole)) {
     return <Navigate to="/" replace />;
   }
 
@@ -44,23 +45,41 @@ function App() {
             
             {/* Public routes */}
             <Route path="/login" element={<Login />} />
-          <Route path="/menu" element={<Menu />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
+            <Route path="/menu" element={<Menu />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
             
-            {/* Admin only routes */}
+            {/* Admin/Manager only routes */}
+            <Route 
+              path="/users" 
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'manager']}>
+                  <UserManagement />
+                </ProtectedRoute>
+              } 
+            />
             <Route 
               path="/inventory" 
               element={
-                <ProtectedRoute requireAdmin={true}>
+                <ProtectedRoute allowedRoles={['admin', 'manager']}>
                   <InventoryPage />
                 </ProtectedRoute>
               } 
             />
             <Route 
+              path="/invoices" 
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'manager']}>
+                  <InvoicePage />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Staff routes */}
+            <Route 
               path="/table-layout" 
               element={
-                <ProtectedRoute requireAdmin={true}>
+                <ProtectedRoute allowedRoles={['admin', 'manager', 'waiter', 'cashier']}>
                   <TableLayout />
                 </ProtectedRoute>
               } 
@@ -68,16 +87,8 @@ function App() {
             <Route 
               path="/take-order" 
               element={
-                <ProtectedRoute requireAdmin={true}>
+                <ProtectedRoute allowedRoles={['admin', 'manager', 'waiter', 'cashier']}>
                   <OrderTakingPage />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/invoice" 
-              element={
-                <ProtectedRoute requireAdmin={true}>
-                  <InvoicePage />
                 </ProtectedRoute>
               } 
             />

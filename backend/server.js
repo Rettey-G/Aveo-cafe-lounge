@@ -66,6 +66,8 @@ app.use('/api/menu-items', require('./routes/menuItems'));
 app.use('/api/orders', require('./routes/orders')); // Add the new orders route
 app.use('/api/tables', require('./routes/tables')); // Add the new tables route
 app.use('/api/invoices', require('./routes/invoices'));
+app.use('/api/inventory', require('./routes/inventory')); // Add inventory route
+app.use('/api/users', require('./routes/users')); // Add users route
 
 // Create initial admin user
 const User = require('./models/User');
