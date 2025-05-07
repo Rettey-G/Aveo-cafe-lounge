@@ -1,92 +1,37 @@
 const express = require('express');
 const router = express.Router();
-const Invoice = require('../models/Invoice');
-const MenuItem = require('../models/MenuItem');
+const { protect, authorize } = require('../middleware/auth');
+const {
+  getInvoices,
+  getInvoice,
+  createInvoice,
+  updateInvoice,
+  deleteInvoice
+} = require('../controllers/invoices');
 
-// Get all invoices
-router.get('/', async (req, res) => {
-  try {
-    const invoices = await Invoice.find().sort({ date: -1 });
-    res.json(invoices);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
+// @route   GET /api/invoices
+// @desc    Get all invoices
+// @access  Private (Admin/Manager/Cashier)
+router.get('/', protect, authorize(['admin', 'manager', 'cashier']), getInvoices);
 
-// Get single invoice
-router.get('/:id', async (req, res) => {
-  try {
-    const invoice = await Invoice.findById(req.params.id);
-    if (!invoice) {
-      return res.status(404).json({ message: 'Invoice not found' });
-    }
-    res.json(invoice);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
+// @route   GET /api/invoices/:id
+// @desc    Get single invoice
+// @access  Private
+router.get('/:id', protect, getInvoice);
 
-// Create invoice
-router.post('/', async (req, res) => {
-  try {
-    const invoice = new Invoice(req.body);
-    const savedInvoice = await invoice.save();
+// @route   POST /api/invoices
+// @desc    Create an invoice
+// @access  Private
+router.post('/', protect, createInvoice);
 
-    // Update inventory quantities
-    for (const item of req.body.items) {
-      const menuItem = await MenuItem.findById(item.menuItem);
-      if (menuItem) {
-        const newQuantity = menuItem.stockQuantity - item.quantity;
-        
-        // Check if stock is getting low
-        if (newQuantity <= menuItem.minimumStock) {
-          // TODO: Implement notification system
-          console.log(`Low stock alert for ${menuItem.name}: ${newQuantity} remaining`);
-        }
+// @route   PUT /api/invoices/:id
+// @desc    Update an invoice
+// @access  Private (Admin/Manager)
+router.put('/:id', protect, authorize(['admin', 'manager']), updateInvoice);
 
-        await MenuItem.findByIdAndUpdate(item.menuItem, {
-          stockQuantity: newQuantity
-        });
-      }
-    }
+// @route   DELETE /api/invoices/:id
+// @desc    Delete an invoice
+// @access  Private (Admin only)
+router.delete('/:id', protect, authorize(['admin']), deleteInvoice);
 
-    res.status(201).json(savedInvoice);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
-
-// Update invoice status
-router.patch('/:id', async (req, res) => {
-  try {
-    const invoice = await Invoice.findById(req.params.id);
-    if (!invoice) {
-      return res.status(404).json({ message: 'Invoice not found' });
-    }
-
-    if (req.body.status) {
-      invoice.status = req.body.status;
-    }
-
-    const updatedInvoice = await invoice.save();
-    res.json(updatedInvoice);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
-
-// Delete invoice
-router.delete('/:id', async (req, res) => {
-  try {
-    const invoice = await Invoice.findById(req.params.id);
-    if (!invoice) {
-      return res.status(404).json({ message: 'Invoice not found' });
-    }
-    await invoice.remove();
-    res.json({ message: 'Invoice deleted' });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-module.exports = router; 
+module.exports = router;

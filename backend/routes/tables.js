@@ -1,127 +1,49 @@
 const express = require('express');
 const router = express.Router();
-const Table = require('../models/Table');
-const { protect } = require('../middleware/authMiddleware');
+const { protect, authorize } = require('../middleware/auth');
+const {
+  getTables,
+  getTable,
+  createTable,
+  updateTable,
+  updateTablePosition,
+  deleteTable,
+  mergeTables
+} = require('../controllers/tables');
 
-// @route   GET api/tables
+// @route   GET /api/tables
 // @desc    Get all tables
-// @access  Private (adjust access as needed, e.g., for waiters/admins)
-router.get('/', protect, async (req, res) => {
-  try {
-    const tables = await Table.find().sort({ location: 1, tableNumber: 1 }); // Sort by location then number
-    res.json(tables);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
-  }
-});
-
-// @route   GET api/tables/:id
-// @desc    Get table by ID
 // @access  Private
-router.get('/:id', protect, async (req, res) => {
-  try {
-    const table = await Table.findById(req.params.id);
-    if (!table) {
-      return res.status(404).json({ msg: 'Table not found' });
-    }
-    res.json(table);
-  } catch (err) {
-    console.error(err.message);
-    if (err.kind === 'ObjectId') {
-        return res.status(404).json({ msg: 'Table not found' });
-    }
-    res.status(500).send('Server Error');
-  }
-});
+router.get('/', protect, getTables);
 
-// @route   POST api/tables
-// @desc    Create a new table
-// @access  Private (Admin only?)
-router.post('/', protect, async (req, res) => {
-  // Add role check if needed (e.g., if (req.user.role !== 'admin'))
-  const { tableNumber, seats, location, status } = req.body;
-
-  try {
-    // Check if table number already exists
-    let table = await Table.findOne({ tableNumber });
-    if (table) {
-      return res.status(400).json({ msg: 'Table number already exists' });
-    }
-
-    table = new Table({
-      tableNumber,
-      seats,
-      location,
-      status // Optional, defaults to 'available'
-    });
-
-    await table.save();
-    res.json(table);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
-  }
-});
-
-// @route   PUT api/tables/:id
-// @desc    Update a table (e.g., status, assigned waiter)
+// @route   GET /api/tables/:id
+// @desc    Get single table
 // @access  Private
-router.put('/:id', protect, async (req, res) => {
-  const { seats, location, status, assignedWaiter } = req.body;
+router.get('/:id', protect, getTable);
 
-  // Build table object
-  const tableFields = {};
-  if (seats) tableFields.seats = seats;
-  if (location) tableFields.location = location;
-  if (status) tableFields.status = status;
-  if (assignedWaiter !== undefined) tableFields.assignedWaiter = assignedWaiter; // Allow null/clearing
+// @route   POST /api/tables
+// @desc    Create a table
+// @access  Private (Admin/Manager)
+router.post('/', protect, authorize(['admin', 'manager']), createTable);
 
-  try {
-    let table = await Table.findById(req.params.id);
+// @route   PUT /api/tables/:id
+// @desc    Update a table
+// @access  Private (Admin/Manager)
+router.put('/:id', protect, authorize(['admin', 'manager']), updateTable);
 
-    if (!table) return res.status(404).json({ msg: 'Table not found' });
+// @route   PUT /api/tables/:id/position
+// @desc    Update table position
+// @access  Private
+router.put('/:id/position', protect, updateTablePosition);
 
-    // Add authorization check if needed (e.g., only admin or assigned waiter can update)
-
-    table = await Table.findByIdAndUpdate(
-      req.params.id,
-      { $set: tableFields },
-      { new: true } // Return the updated document
-    );
-
-    res.json(table);
-  } catch (err) {
-    console.error(err.message);
-     if (err.kind === 'ObjectId') {
-        return res.status(404).json({ msg: 'Table not found' });
-    }
-    res.status(500).send('Server Error');
-  }
-});
-
-// @route   DELETE api/tables/:id
+// @route   DELETE /api/tables/:id
 // @desc    Delete a table
-// @access  Private (Admin only?)
-router.delete('/:id', protect, async (req, res) => {
-  // Add role check if needed
-  try {
-    const table = await Table.findById(req.params.id);
+// @access  Private (Admin/Manager)
+router.delete('/:id', protect, authorize(['admin', 'manager']), deleteTable);
 
-    if (!table) return res.status(404).json({ msg: 'Table not found' });
-
-    // Add authorization check if needed
-
-    await Table.findByIdAndDelete(req.params.id);
-
-    res.json({ msg: 'Table removed' });
-  } catch (err) {
-    console.error(err.message);
-     if (err.kind === 'ObjectId') {
-        return res.status(404).json({ msg: 'Table not found' });
-    }
-    res.status(500).send('Server Error');
-  }
-});
+// @route   POST /api/tables/merge
+// @desc    Merge two tables
+// @access  Private (Admin/Manager)
+router.post('/merge', protect, authorize(['admin', 'manager']), mergeTables);
 
 module.exports = router;
