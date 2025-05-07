@@ -20,7 +20,9 @@ const InvoicePage = () => {
 
   const fetchMenuItems = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/menu-items`);
+      // Ensure API_URL includes /api
+      const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '') + '/api';
+      const response = await axios.get(`${API_URL}/menu-items`);
       setMenuItems(response.data);
     } catch (error) {
       console.error('Error fetching menu items:', error);
@@ -98,10 +100,12 @@ const InvoicePage = () => {
     };
 
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/invoices`, invoiceData);
+      // Ensure API_URL includes /api
+      const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '') + '/api';
+      await axios.post(`${API_URL}/invoices`, invoiceData);
       // Update inventory quantities
       for (const item of selectedItems) {
-        await axios.put(`${process.env.REACT_APP_API_URL}/menu-items/${item._id}`, {
+        await axios.put(`${API_URL}/menu-items/${item._id}`, {
           stockQuantity: item.stockQuantity - item.quantity,
         });
       }

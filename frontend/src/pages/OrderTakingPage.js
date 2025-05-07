@@ -12,7 +12,8 @@ const OrderTakingPage = () => {
   const [error, setError] = useState(null);
   const [orderSuccess, setOrderSuccess] = useState(false);
 
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+  // Ensure API_URL includes /api
+  const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '') + '/api';
 
   // Fetch available tables
   const fetchTables = useCallback(async () => {

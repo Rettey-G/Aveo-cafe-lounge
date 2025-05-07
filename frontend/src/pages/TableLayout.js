@@ -18,7 +18,8 @@ const TableLayout = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+  // Ensure API_URL includes /api
+  const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '') + '/api';
 
   // Fetch tables
   const fetchTables = useCallback(async () => {
