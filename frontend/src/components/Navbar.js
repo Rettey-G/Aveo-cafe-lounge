@@ -46,26 +46,22 @@ function Navbar() {
             </Link>
           </li>
           
-          {/* Admin/Manager Only Routes */}
-          {(userRole === 'admin' || userRole === 'manager') && (
-            <>
-              <li className="nav-item">
-                <Link to="/users" className="nav-links" onClick={() => setIsMenuOpen(false)}>
-                  User Management
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link to="/inventory" className="nav-links" onClick={() => setIsMenuOpen(false)}>
-                  Inventory
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link to="/invoices" className="nav-links" onClick={() => setIsMenuOpen(false)}>
-                  Invoices
-                </Link>
-              </li>
-            </>
-          )}
+          {/* Management Routes - Temporarily showing for all users */}
+          <li className="nav-item">
+            <Link to="/users" className="nav-links" onClick={() => setIsMenuOpen(false)}>
+              User Management
+            </Link>
+          </li>
+          <li className="nav-item">
+            <Link to="/inventory" className="nav-links" onClick={() => setIsMenuOpen(false)}>
+              Inventory
+            </Link>
+          </li>
+          <li className="nav-item">
+            <Link to="/invoices" className="nav-links" onClick={() => setIsMenuOpen(false)}>
+              Invoices
+            </Link>
+          </li>
           
           {/* Staff Routes */}
           <li className="nav-item">
@@ -91,17 +87,18 @@ function Navbar() {
             </Link>
           </li>
           
-          {/* Logout Button */}
-          {userRole && (
-            <li className="nav-item">
-              <button className="nav-links logout-btn" onClick={() => {
+          {/* Logout Button - Always visible */}
+          <li className="nav-item">
+            <button
+              className="nav-links logout-btn"
+              onClick={() => {
                 handleLogout();
                 setIsMenuOpen(false);
-              }}>
-                Logout
-              </button>
-            </li>
-          )}
+              }}
+            >
+              Logout
+            </button>
+          </li>
         </ul>
       </div>
     </nav>
