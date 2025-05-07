@@ -77,6 +77,11 @@ function Navbar() {
               All Invoices
             </Link>
           </li>
+          <li className="nav-item">
+            <Link to="/orders" className="nav-links" onClick={() => setIsMenuOpen(false)}>
+              Manage Orders
+            </Link>
+          </li>
           
           {/* Staff Routes */}
           <li className="nav-item">

@@ -1,0 +1,149 @@
+.orders-page {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.orders-page h1 {
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.filter-controls {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.filter-controls select {
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  background-color: white;
+  cursor: pointer;
+}
+
+.orders-list {
+  margin-top: 20px;
+  overflow-x: auto;
+}
+
+.orders-list table {
+  width: 100%;
+  border-collapse: collapse;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.orders-list th,
+.orders-list td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.orders-list th {
+  background-color: #f8f8f8;
+  font-weight: 600;
+}
+
+.orders-list tr:hover {
+  background-color: #f5f5f5;
+}
+
+.order-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+.order-items li {
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-badge.pending {
+  background-color: #ffd166;
+  color: #664b00;
+}
+
+.status-badge.making {
+  background-color: #06d6a0;
+  color: #00332c;
+}
+
+.status-badge.served {
+  background-color: #118ab2;
+  color: white;
+}
+
+.status-badge.completed {
+  background-color: #073b4c;
+  color: white;
+}
+
+.status-pending {
+  background-color: rgba(255, 209, 102, 0.1);
+}
+
+.status-making {
+  background-color: rgba(6, 214, 160, 0.1);
+}
+
+.status-served {
+  background-color: rgba(17, 138, 178, 0.1);
+}
+
+.status-completed {
+  background-color: rgba(7, 59, 76, 0.1);
+}
+
+.refresh-button {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.refresh-button button {
+  padding: 10px 20px;
+  background-color: #118ab2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+.refresh-button button:hover {
+  background-color: #073b4c;
+}
+
+.error {
+  color: #e63946;
+  text-align: center;
+  margin: 20px 0;
+}
+
+@media (max-width: 768px) {
+  .orders-list th,
+  .orders-list td {
+    padding: 8px 10px;
+    font-size: 14px;
+  }
+  
+  .order-items {
+    max-height: 80px;
+  }
+}

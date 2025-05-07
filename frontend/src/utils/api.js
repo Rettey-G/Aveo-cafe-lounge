@@ -43,7 +43,13 @@ api.interceptors.response.use(
     // Handle 403 Forbidden errors (insufficient permissions)
     if (error.response && error.response.status === 403) {
       console.error('Permission denied. Your role may not have access to this resource.');
-      // We'll handle this in the component level, not redirecting automatically
+      
+      // Check if user is not using admin role
+      const userRole = localStorage.getItem('userRole');
+      if (userRole !== 'admin') {
+        // Display user-friendly message
+        alert('You need admin privileges to perform this action. Please log in as an admin user.');
+      }
     }
     
     // Log all errors for debugging
