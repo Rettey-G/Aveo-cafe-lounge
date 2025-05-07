@@ -23,6 +23,7 @@ const UserManagement = () => {
   // Fetch users on component mount
   useEffect(() => {
     fetchUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchUsers = async () => {

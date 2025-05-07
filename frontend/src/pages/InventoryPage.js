@@ -27,6 +27,7 @@ const InventoryPage = () => {
   // Fetch inventory items on component mount
   useEffect(() => {
     fetchInventoryItems();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchInventoryItems = async () => {
