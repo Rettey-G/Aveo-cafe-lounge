@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios'; // Assuming axios is used for API calls
+import api from '../utils/api';
 import './TableLayout.css'; // We'll create this CSS file next
 
 const TableLayout = () => {
@@ -18,17 +18,13 @@ const TableLayout = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
-  // Ensure API_URL includes /api
-  const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '') + '/api';
+  // API URL is now handled by the centralized API utility
 
   // Fetch tables
   const fetchTables = useCallback(async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get(`${API_URL}/tables`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await api.get('/tables');
       setTables(res.data);
       setError(null);
     } catch (err) {
@@ -58,10 +54,7 @@ const TableLayout = () => {
   const handleAddTable = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
-      const res = await axios.post(`${API_URL}/tables`, newTableData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await api.post('/tables', newTableData);
       setTables([...tables, res.data]);
       setShowAddModal(false);
       setNewTableData({ tableNumber: '', seats: '', location: 'Ground Floor' }); // Reset form
@@ -77,10 +70,7 @@ const TableLayout = () => {
     e.preventDefault();
     if (!currentTable) return;
     try {
-      const token = localStorage.getItem('token');
-      const res = await axios.put(`${API_URL}/tables/${currentTable._id}`, currentTable, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await api.put(`/tables/${currentTable._id}`, currentTable);
       setTables(tables.map(t => t._id === currentTable._id ? res.data : t));
       setShowEditModal(false);
       setCurrentTable(null);
@@ -95,10 +85,7 @@ const TableLayout = () => {
   const handleDeleteTable = async (id) => {
     if (window.confirm('Are you sure you want to delete this table?')) {
       try {
-        const token = localStorage.getItem('token');
-        await axios.delete(`${API_URL}/tables/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        await api.delete(`/tables/${id}`);
         setTables(tables.filter(t => t._id !== id));
         setError(null);
       } catch (err) {
@@ -147,11 +134,9 @@ const TableLayout = () => {
     setIsDragging(false);
 
     try {
-      const token = localStorage.getItem('token');
-      await axios.put(
-        `${API_URL}/tables/${selectedTable._id}/position`,
-        { position: selectedTable.position },
-        { headers: { Authorization: `Bearer ${token}` } }
+      await api.put(
+        `/tables/${selectedTable._id}/position`,
+        { position: selectedTable.position }
       );
     } catch (err) {
       setError('Failed to update table position');
@@ -160,11 +145,9 @@ const TableLayout = () => {
 
   const handleMergeTables = async (table1, table2) => {
     try {
-      const token = localStorage.getItem('token');
-      await axios.post(
-        `${API_URL}/tables/merge`,
-        { table1Id: table1._id, table2Id: table2._id },
-        { headers: { Authorization: `Bearer ${token}` } }
+      await api.post(
+        `/tables/merge`,
+        { table1Id: table1._id, table2Id: table2._id }
       );
       fetchTables();
     } catch (err) {

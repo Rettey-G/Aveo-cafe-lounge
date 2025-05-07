@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import api from '../utils/api';
 import './AllInvoicesPage.css';
 
 const AllInvoicesPage = () => {
@@ -9,18 +9,12 @@ const AllInvoicesPage = () => {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
-  // Ensure API_URL includes /api
-  const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '') + '/api';
+  // API URL is now handled by the centralized API utility
 
   const fetchInvoices = useCallback(async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/invoices`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const response = await api.get('/invoices');
       setInvoices(response.data);
       setError(null);
     } catch (err) {
@@ -44,12 +38,7 @@ const AllInvoicesPage = () => {
   const handleDeleteInvoice = async (id) => {
     if (window.confirm('Are you sure you want to delete this invoice?')) {
       try {
-        const token = localStorage.getItem('token');
-        await axios.delete(`${API_URL}/invoices/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        await api.delete(`/invoices/${id}`);
         setInvoices(invoices.filter(invoice => invoice._id !== id));
         setError(null);
       } catch (err) {

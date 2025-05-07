@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../utils/api';
 import './InvoicePage.css';
 
 const InvoicePage = () => {
@@ -20,14 +20,7 @@ const InvoicePage = () => {
 
   const fetchMenuItems = async () => {
     try {
-      // Ensure API_URL includes /api
-      const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '') + '/api';
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/menu-items`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const response = await api.get('/menu-items');
       setMenuItems(response.data);
     } catch (error) {
       console.error('Error fetching menu items:', error);
@@ -115,22 +108,11 @@ const InvoicePage = () => {
     };
 
     try {
-      // Ensure API_URL includes /api
-      const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '') + '/api';
-      const token = localStorage.getItem('token');
-      await axios.post(`${API_URL}/invoices`, invoiceData, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      await api.post('/invoices', invoiceData);
       // Update inventory quantities
       for (const item of selectedItems) {
-        await axios.put(`${API_URL}/menu-items/${item._id}`, {
+        await api.put(`/menu-items/${item._id}`, {
           stockQuantity: item.stockQuantity - item.quantity,
-        }, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
         });
       }
       alert('Invoice generated successfully!');

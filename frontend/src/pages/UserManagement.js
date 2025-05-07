@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../utils/api';
 import './UserManagement.css';
 
 const UserManagement = () => {
@@ -18,8 +18,6 @@ const UserManagement = () => {
   const [currentUserId, setCurrentUserId] = useState(null);
 
   // Ensure API_URL includes /api
-  const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '') + '/api';
-
   // Fetch users on component mount
   useEffect(() => {
     fetchUsers();
@@ -29,14 +27,7 @@ const UserManagement = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      };
-      const { data } = await axios.get(`${API_URL}/users`, config);
+      const { data } = await api.get('/users');
       setUsers(data.data);
       setLoading(false);
     } catch (err) {
@@ -56,22 +47,12 @@ const UserManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      };
-
       if (editMode) {
-        // Update existing user
         const updateData = { ...formData };
         if (!updateData.password) delete updateData.password; // Don't send empty password
-        await axios.put(`${API_URL}/users/${currentUserId}`, updateData, config);
+        await api.put(`/users/${currentUserId}`, updateData);
       } else {
-        // Create new user
-        await axios.post(`${API_URL}/users`, formData, config);
+        await api.post(`/users`, formData);
       }
 
       // Reset form and fetch updated users
@@ -96,22 +77,15 @@ const UserManagement = () => {
     setCurrentUserId(user._id);
   };
 
-  const handleDelete = async (userId) => {
-    if (!window.confirm('Are you sure you want to delete this user?')) return;
-    
-    try {
-      const token = localStorage.getItem('token');
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      };
-      await axios.delete(`${API_URL}/users/${userId}`, config);
-      fetchUsers();
-    } catch (err) {
-      setError('Failed to delete user. ' + (err.response?.data?.error || err.message));
-      console.error(err);
+  const handleDeleteUser = async (userId) => {
+    if (window.confirm('Are you sure you want to delete this user?')) {
+      try {
+        await api.delete(`/users/${userId}`);
+        fetchUsers();
+      } catch (err) {
+        setError('Failed to delete user. ' + (err.response?.data?.error || err.message));
+        console.error(err);
+      }
     }
   };
 
@@ -254,12 +228,7 @@ const UserManagement = () => {
                   >
                     Edit
                   </button>
-                  <button 
-                    className="btn-delete" 
-                    onClick={() => handleDelete(user._id)}
-                  >
-                    Delete
-                  </button>
+                  <button className="delete-btn" onClick={() => handleDeleteUser(user._id)}>Delete</button>
                 </td>
               </tr>
             ))}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+import api from '../utils/api';
 import './InventoryPage.css';
 
 const InventoryPage = () => {
@@ -21,9 +21,6 @@ const InventoryPage = () => {
   const [showForm, setShowForm] = useState(false);
   const fileInputRef = useRef(null);
 
-  // Ensure API_URL includes /api
-  const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '') + '/api';
-
   // Fetch inventory items on component mount
   useEffect(() => {
     fetchInventoryItems();
@@ -33,15 +30,8 @@ const InventoryPage = () => {
   const fetchInventoryItems = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      };
-      const { data } = await axios.get(`${API_URL}/inventory`, config);
-      setInventoryItems(data.data);
+      const response = await api.get('/inventory');
+      setInventoryItems(response.data.data);
       setLoading(false);
     } catch (err) {
       setError('Failed to fetch inventory items. ' + (err.response?.data?.error || err.message));
@@ -73,27 +63,28 @@ const InventoryPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      };
-
       let itemId;
       
       if (editMode) {
         // Update existing inventory item
-        const response = await axios.put(
-          `${API_URL}/inventory/${currentItemId}`, 
-          formData, 
-          config
-        );
+        const response = await api.put(`/inventory/${currentItemId}`, formData);
         itemId = response.data.data._id;
       } else {
         // Create new inventory item
-        const response = await axios.post(`${API_URL}/inventory`, formData, config);
+        const formDataWithImage = new FormData();
+        Object.keys(formData).forEach(key => {
+          if (key === 'image' && formData[key] instanceof File) {
+            formDataWithImage.append('image', formData[key]);
+          } else {
+            formDataWithImage.append(key, formData[key]);
+          }
+        });
+
+        const response = await api.post('/inventory', formDataWithImage, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
         itemId = response.data.data._id;
       }
 
@@ -102,18 +93,11 @@ const InventoryPage = () => {
         const formDataWithImage = new FormData();
         formDataWithImage.append('file', formData.image);
         
-        const uploadConfig = {
+        await api.post(`/inventory/${itemId}/image`, formDataWithImage, {
           headers: {
-            'Content-Type': 'multipart/form-data',
-            'Authorization': `Bearer ${token}`
+            'Content-Type': 'multipart/form-data'
           }
-        };
-        
-        await axios.post(
-          `${API_URL}/inventory/${itemId}/image`, 
-          formDataWithImage, 
-          uploadConfig
-        );
+        });
       }
 
       // Reset form and fetch updated inventory
@@ -139,7 +123,9 @@ const InventoryPage = () => {
     
     // Set preview image if available
     if (item.image) {
-      setPreviewImage(`${API_URL}${item.image}`);
+      // Use the base URL from our API utility
+      const baseUrl = api.defaults.baseURL.replace('/api', '');
+      setPreviewImage(`${baseUrl}${item.image}`);
     } else {
       setPreviewImage(null);
     }
@@ -153,14 +139,7 @@ const InventoryPage = () => {
     if (!window.confirm('Are you sure you want to delete this inventory item?')) return;
     
     try {
-      const token = localStorage.getItem('token');
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      };
-      await axios.delete(`${API_URL}/inventory/${itemId}`, config);
+      await api.delete(`/inventory/${itemId}`);
       fetchInventoryItems();
     } catch (err) {
       setError('Failed to delete inventory item. ' + (err.response?.data?.error || err.message));

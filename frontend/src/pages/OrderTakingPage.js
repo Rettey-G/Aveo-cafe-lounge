@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import api from '../utils/api';
 import './OrderTakingPage.css'; // We'll create this CSS file next
 
 const OrderTakingPage = () => {
@@ -12,19 +12,13 @@ const OrderTakingPage = () => {
   const [error, setError] = useState(null);
   const [orderSuccess, setOrderSuccess] = useState(false);
 
-  // Ensure API_URL includes /api
-  const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '') + '/api';
+  // API URL is now handled by the centralized API utility
 
   // Fetch available tables
   const fetchTables = useCallback(async () => {
     setLoadingTables(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get(`${API_URL}/tables?status=available`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      }); // Fetch only available tables
+      const res = await api.get('/tables?status=available'); // Fetch only available tables
       setTables(res.data);
       setError(null);
     } catch (err) {
@@ -40,12 +34,7 @@ const OrderTakingPage = () => {
   const fetchMenuItems = useCallback(async () => {
     setLoadingMenu(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get(`${API_URL}/menu-items`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const res = await api.get('/menu-items');
       setMenuItems(res.data);
       setError(null);
     } catch (err) {
@@ -100,8 +89,10 @@ const OrderTakingPage = () => {
   // Calculate total price
   const calculateTotal = () => {
     return currentOrder.reduce((total, item) => {
-        // Ensure price is treated as a number
-        const price = parseFloat(item.menuItem.price.replace(/[^\d.-]/g, '')) || 0;
+        // Ensure price is treated as a number, handling both string and number formats
+        const price = typeof item.menuItem.price === 'string' 
+          ? parseFloat(item.menuItem.price.replace(/[^\d.-]/g, '')) || 0
+          : parseFloat(item.menuItem.price) || 0;
         return total + (price * item.quantity);
     }, 0).toFixed(2);
   };
@@ -128,10 +119,7 @@ const OrderTakingPage = () => {
     };
 
     try {
-      const token = localStorage.getItem('token');
-      await axios.post(`${API_URL}/orders`, orderData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.post('/orders', orderData);
       setOrderSuccess(true);
       setCurrentOrder([]);
       setSelectedTable('');
@@ -216,7 +204,7 @@ const OrderTakingPage = () => {
             {currentOrder.map((orderItem, index) => (
               <li key={index}>
                 <span>{orderItem.menuItem.name} x {orderItem.quantity}</span>
-                <span>(${(parseFloat(orderItem.menuItem.price.replace(/[^\d.-]/g, '')) * orderItem.quantity).toFixed(2)})</span>
+                <span>(${(parseFloat(typeof orderItem.menuItem.price === 'string' ? orderItem.menuItem.price.replace(/[^\d.-]/g, '') : orderItem.menuItem.price) * orderItem.quantity).toFixed(2)})</span>
                 <button onClick={() => removeItemFromOrder(orderItem.menuItem._id)}>-</button>
               </li>
             ))}
