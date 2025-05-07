@@ -100,7 +100,7 @@ const InventoryPage = () => {
       }
 
       // If there's an image to upload and we're updating (not creating new)
-      if (isEditing && formData.image && formData.image instanceof File) {
+      if (editMode && formData.image && formData.image instanceof File) {
         const formDataWithImage = new FormData();
         formDataWithImage.append('image', formData.image);
         
