@@ -9,6 +9,7 @@ import InventoryPage from './pages/InventoryPage';
 import TableLayout from './pages/TableLayout';
 import OrderTakingPage from './pages/OrderTakingPage';
 import InvoicePage from './pages/InvoicePage';
+import AllInvoicesPage from './pages/AllInvoicesPage';
 import UserManagement from './pages/UserManagement';
 import Login from './pages/Login';
 import './App.css';
@@ -71,8 +72,16 @@ function App() {
             <Route 
               path="/invoices" 
               element={
-                <ProtectedRoute allowedRoles={['admin', 'manager']}>
+                <ProtectedRoute allowedRoles={['admin', 'manager', 'cashier']}>
                   <InvoicePage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/all-invoices" 
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'manager', 'cashier']}>
+                  <AllInvoicesPage />
                 </ProtectedRoute>
               } 
             />

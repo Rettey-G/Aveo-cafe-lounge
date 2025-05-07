@@ -19,7 +19,12 @@ const OrderTakingPage = () => {
   const fetchTables = useCallback(async () => {
     setLoadingTables(true);
     try {
-      const res = await axios.get(`${API_URL}/tables?status=available`); // Fetch only available tables
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API_URL}/tables?status=available`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }); // Fetch only available tables
       setTables(res.data);
       setError(null);
     } catch (err) {
@@ -35,7 +40,12 @@ const OrderTakingPage = () => {
   const fetchMenuItems = useCallback(async () => {
     setLoadingMenu(true);
     try {
-      const res = await axios.get(`${API_URL}/menu-items`);
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API_URL}/menu-items`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       setMenuItems(res.data);
       setError(null);
     } catch (err) {
@@ -118,9 +128,9 @@ const OrderTakingPage = () => {
     };
 
     try {
-      // Replace with your actual API endpoint and auth mechanism
+      const token = localStorage.getItem('token');
       await axios.post(`${API_URL}/orders`, orderData, {
-        // headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
       setOrderSuccess(true);
       setCurrentOrder([]);

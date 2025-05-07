@@ -22,7 +22,12 @@ const InvoicePage = () => {
     try {
       // Ensure API_URL includes /api
       const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '') + '/api';
-      const response = await axios.get(`${API_URL}/menu-items`);
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_URL}/menu-items`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       setMenuItems(response.data);
     } catch (error) {
       console.error('Error fetching menu items:', error);
@@ -73,12 +78,20 @@ const InvoicePage = () => {
     );
   };
 
+  const calculateServiceCharge = () => {
+    return calculateSubtotal() * 0.1; // 10% service charge
+  };
+
   const calculateTax = () => {
-    return calculateSubtotal() * 0.1; // 10% tax
+    return calculateSubtotal() * 0.16; // 16% GST
+  };
+
+  const calculateDiscount = () => {
+    return 0; // No discount by default, can be implemented later
   };
 
   const calculateTotal = () => {
-    return calculateSubtotal() + calculateTax();
+    return calculateSubtotal() + calculateServiceCharge() + calculateTax() - calculateDiscount();
   };
 
   const handleCustomerDetailsChange = (e) => {
@@ -94,7 +107,9 @@ const InvoicePage = () => {
       customerDetails,
       items: selectedItems,
       subtotal: calculateSubtotal(),
+      serviceCharge: calculateServiceCharge(),
       tax: calculateTax(),
+      discount: calculateDiscount(),
       total: calculateTotal(),
       date: new Date().toISOString(),
     };
@@ -102,11 +117,20 @@ const InvoicePage = () => {
     try {
       // Ensure API_URL includes /api
       const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '') + '/api';
-      await axios.post(`${API_URL}/invoices`, invoiceData);
+      const token = localStorage.getItem('token');
+      await axios.post(`${API_URL}/invoices`, invoiceData, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       // Update inventory quantities
       for (const item of selectedItems) {
         await axios.put(`${API_URL}/menu-items/${item._id}`, {
           stockQuantity: item.stockQuantity - item.quantity,
+        }, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         });
       }
       alert('Invoice generated successfully!');
@@ -224,8 +248,16 @@ const InvoicePage = () => {
             <span>${calculateSubtotal().toFixed(2)}</span>
           </div>
           <div className="summary-item">
-            <span>Tax (10%):</span>
+            <span>Service Charge (10%):</span>
+            <span>${calculateServiceCharge().toFixed(2)}</span>
+          </div>
+          <div className="summary-item">
+            <span>GST (16%):</span>
             <span>${calculateTax().toFixed(2)}</span>
+          </div>
+          <div className="summary-item">
+            <span>Discount:</span>
+            <span>${calculateDiscount().toFixed(2)}</span>
           </div>
           <div className="summary-item total">
             <span>Total:</span>

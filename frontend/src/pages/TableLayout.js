@@ -181,6 +181,13 @@ const TableLayout = () => {
     acc[location].push(table);
     return acc;
   }, {});
+  
+  // Ensure we have all floor sections even if empty
+  const floorSections = {
+    'Ground Floor': groupedTables['Ground Floor'] || [],
+    '1st Floor Indoor': groupedTables['1st Floor Indoor'] || [],
+    '1st Floor Outdoor': groupedTables['1st Floor Outdoor'] || []
+  };
 
   if (loading) return <div className="loading">Loading tables...</div>;
   if (error) return <div className="error">{error}</div>;
@@ -199,33 +206,111 @@ const TableLayout = () => {
         <p>No tables found. Add a table to get started.</p>
       )}
 
-      {!loading && !error && Object.entries(groupedTables).map(([location, tablesInLocation]) => (
-        <div key={location} className="location-section">
-          <h2>{location}</h2>
-          <div className="table-grid">
-            {tablesInLocation.map(table => (
-              <div
-                key={table._id}
-                className={`table-card status-${table.status?.toLowerCase() || 'unknown'} ${selectedTable?._id === table._id ? 'selected' : ''}`}
-                style={{
-                  left: `${table.position?.x || 0}px`,
-                  top: `${table.position?.y || 0}px`
-                }}
-                onClick={() => handleTableClick(table)}
-                onMouseDown={(e) => handleDragStart(e, table)}
-              >
-                <h3>Table {table.tableNumber}</h3>
+      {/* Floor Plan Tabs */}
+      <div className="floor-tabs">
+        <button className="tab-button active">All Floors</button>
+        <button className="tab-button">Ground Floor</button>
+        <button className="tab-button">1st Floor Indoor</button>
+        <button className="tab-button">1st Floor Outdoor</button>
+      </div>
+
+      {/* Floor Sections */}
+      {!loading && !error && Object.keys(floorSections).length === 0 && (
+        <p>No tables found. Add a table to get started.</p>
+      )}
+
+      {/* Ground Floor */}
+      <div className="floor-section">
+        <h2>Ground Floor</h2>
+        <div className="floor-layout ground-floor">
+          {floorSections['Ground Floor'].map(table => (
+            <div
+              key={table._id}
+              className={`table-item status-${table.status?.toLowerCase() || 'available'} ${selectedTable?._id === table._id ? 'selected' : ''}`}
+              style={{
+                left: `${table.position?.x || Math.random() * 500}px`,
+                top: `${table.position?.y || Math.random() * 300}px`,
+                width: `${50 + (table.seats * 5)}px`,
+                height: `${50 + (table.seats * 5)}px`
+              }}
+              onClick={() => handleTableClick(table)}
+              onMouseDown={(e) => handleDragStart(e, table)}
+            >
+              <div className="table-number">{table.tableNumber}</div>
+              <div className="table-info">
                 <p>Seats: {table.seats}</p>
-                <p>Status: {table.status || 'N/A'}</p>
-                <div className="table-actions">
-                  <button onClick={(e) => { e.stopPropagation(); openEditModal(table); }} className="edit-btn">Edit</button>
-                  <button onClick={(e) => { e.stopPropagation(); handleDeleteTable(table._id); }} className="delete-btn">Delete</button>
-                </div>
+                <p>Status: {table.status || 'Available'}</p>
               </div>
-            ))}
-          </div>
+              <div className="table-actions">
+                <button onClick={(e) => { e.stopPropagation(); openEditModal(table); }} className="edit-btn">✏️</button>
+                <button onClick={(e) => { e.stopPropagation(); handleDeleteTable(table._id); }} className="delete-btn">🗑️</button>
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
+
+      {/* 1st Floor Indoor */}
+      <div className="floor-section">
+        <h2>1st Floor Indoor</h2>
+        <div className="floor-layout first-floor-indoor">
+          {floorSections['1st Floor Indoor'].map(table => (
+            <div
+              key={table._id}
+              className={`table-item status-${table.status?.toLowerCase() || 'available'} ${selectedTable?._id === table._id ? 'selected' : ''}`}
+              style={{
+                left: `${table.position?.x || Math.random() * 500}px`,
+                top: `${table.position?.y || Math.random() * 300}px`,
+                width: `${50 + (table.seats * 5)}px`,
+                height: `${50 + (table.seats * 5)}px`
+              }}
+              onClick={() => handleTableClick(table)}
+              onMouseDown={(e) => handleDragStart(e, table)}
+            >
+              <div className="table-number">{table.tableNumber}</div>
+              <div className="table-info">
+                <p>Seats: {table.seats}</p>
+                <p>Status: {table.status || 'Available'}</p>
+              </div>
+              <div className="table-actions">
+                <button onClick={(e) => { e.stopPropagation(); openEditModal(table); }} className="edit-btn">✏️</button>
+                <button onClick={(e) => { e.stopPropagation(); handleDeleteTable(table._id); }} className="delete-btn">🗑️</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 1st Floor Outdoor */}
+      <div className="floor-section">
+        <h2>1st Floor Outdoor</h2>
+        <div className="floor-layout first-floor-outdoor">
+          {floorSections['1st Floor Outdoor'].map(table => (
+            <div
+              key={table._id}
+              className={`table-item status-${table.status?.toLowerCase() || 'available'} ${selectedTable?._id === table._id ? 'selected' : ''}`}
+              style={{
+                left: `${table.position?.x || Math.random() * 500}px`,
+                top: `${table.position?.y || Math.random() * 300}px`,
+                width: `${50 + (table.seats * 5)}px`,
+                height: `${50 + (table.seats * 5)}px`
+              }}
+              onClick={() => handleTableClick(table)}
+              onMouseDown={(e) => handleDragStart(e, table)}
+            >
+              <div className="table-number">{table.tableNumber}</div>
+              <div className="table-info">
+                <p>Seats: {table.seats}</p>
+                <p>Status: {table.status || 'Available'}</p>
+              </div>
+              <div className="table-actions">
+                <button onClick={(e) => { e.stopPropagation(); openEditModal(table); }} className="edit-btn">✏️</button>
+                <button onClick={(e) => { e.stopPropagation(); handleDeleteTable(table._id); }} className="delete-btn">🗑️</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* Add Table Modal */}
       {showAddModal && (
