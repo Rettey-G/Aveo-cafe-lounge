@@ -28,7 +28,7 @@ const OrderTakingPage = () => {
     } finally {
       setLoadingTables(false);
     }
-  }, [API_URL]);
+  }, []);
 
   // Fetch menu items
   const fetchMenuItems = useCallback(async () => {
@@ -44,7 +44,7 @@ const OrderTakingPage = () => {
     } finally {
       setLoadingMenu(false);
     }
-  }, [API_URL]);
+  }, []);
 
   useEffect(() => {
     fetchTables();

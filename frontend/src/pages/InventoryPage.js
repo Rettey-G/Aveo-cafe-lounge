@@ -171,14 +171,7 @@ const InventoryPage = () => {
     
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      };
-      await axios.post(`${API_URL}/inventory/sample/add`, {}, config);
+      await api.post('/inventory/sample/add', {});
       fetchInventoryItems();
     } catch (err) {
       setError('Failed to add sample inventory items. ' + (err.response?.data?.error || err.message));
@@ -349,7 +342,7 @@ const InventoryPage = () => {
               <tr key={item._id}>
                 <td className="item-image">
                   {item.image ? (
-                    <img src={`${API_URL}${item.image}`} alt={item.name} />
+                    <img src={`${api.defaults.baseURL.replace('/api', '')}${item.image}`} alt={item.name} />
                   ) : (
                     <div className="no-image">No Image</div>
                   )}

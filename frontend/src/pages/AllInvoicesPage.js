@@ -18,13 +18,13 @@ const AllInvoicesPage = () => {
       setInvoices(response.data);
       setError(null);
     } catch (err) {
-      console.error("Error fetching invoices:", err);
+      console.error('Error fetching invoices:', err.response?.data?.message || err.message);
       setError('Failed to fetch invoices. Please try again.');
       setInvoices([]);
     } finally {
       setLoading(false);
     }
-  }, [API_URL]);
+  }, []);
 
   useEffect(() => {
     fetchInvoices();

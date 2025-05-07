@@ -34,7 +34,7 @@ const TableLayout = () => {
     } finally {
       setLoading(false);
     }
-  }, [API_URL]);
+  }, []);
 
   useEffect(() => {
     fetchTables();
@@ -141,7 +141,7 @@ const TableLayout = () => {
     } catch (err) {
       setError('Failed to update table position');
     }
-  }, [isDragging, selectedTable, API_URL]);
+  }, [isDragging, selectedTable]);
 
   const handleMergeTables = async (table1, table2) => {
     try {
