@@ -91,7 +91,9 @@ const MenuManagementPage = () => {
           });
           
           // Use axios directly to avoid interceptor issues with FormData
-          const response = await axios.post(`${api.defaults.baseURL}/menu-items`, formDataWithImage, {
+          // Use the base URL without /api suffix for file uploads
+          const baseUrl = api.defaults.baseURL.replace('/api', '');
+          const response = await axios.post(`${baseUrl}/api/menu-items`, formDataWithImage, {
             headers: {
               'Content-Type': 'multipart/form-data',
               'Authorization': `Bearer ${localStorage.getItem('token')}`

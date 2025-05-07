@@ -85,7 +85,9 @@ const InventoryPage = () => {
           });
           
           // Use axios directly to avoid interceptor issues with FormData
-          const response = await axios.post(`${api.defaults.baseURL}/inventory`, formDataWithImage, {
+          // Fix the URL by removing /api suffix and then adding it properly
+          const baseUrl = api.defaults.baseURL.replace('/api', '');
+          const response = await axios.post(`${baseUrl}/api/inventory`, formDataWithImage, {
             headers: {
               'Content-Type': 'multipart/form-data',
               'Authorization': `Bearer ${localStorage.getItem('token')}`

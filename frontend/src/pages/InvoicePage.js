@@ -95,19 +95,32 @@ const InvoicePage = () => {
   };
 
   const handleGenerateInvoice = async () => {
+    // Make sure we have valid data that won't cause server errors
     const invoiceData = {
       invoiceNumber,
-      customerDetails,
-      items: selectedItems,
+      customerDetails: {
+        name: customerDetails.name || 'Guest',
+        email: customerDetails.email || '',
+        phone: customerDetails.phone || '',
+        address: customerDetails.address || ''
+      },
+      items: selectedItems.map(item => ({
+        _id: item._id,
+        name: item.name,
+        price: parseFloat(item.price) || 0,
+        quantity: parseInt(item.quantity) || 1
+      })),
       subtotal: calculateSubtotal(),
       serviceCharge: calculateServiceCharge(),
       tax: calculateTax(),
       discount: calculateDiscount(),
       total: calculateTotal(),
       date: new Date().toISOString(),
+      status: 'paid'
     };
 
     try {
+      console.log('Sending invoice data:', invoiceData);
       await api.post('/invoices', invoiceData);
       // Update inventory quantities
       for (const item of selectedItems) {
