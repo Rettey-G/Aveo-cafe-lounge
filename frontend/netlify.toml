@@ -5,6 +5,7 @@
 
 [build.environment]
   NODE_VERSION = "16.0.0"
+  REACT_APP_API_URL = "https://aveo-cafe-backend.onrender.com/api"
 
 [[redirects]]
   from = "/*"
