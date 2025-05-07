@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
 import api from '../utils/api';
 import './InventoryPage.css';
 
@@ -71,31 +72,43 @@ const InventoryPage = () => {
         itemId = response.data.data._id;
       } else {
         // Create new inventory item
-        const formDataWithImage = new FormData();
-        Object.keys(formData).forEach(key => {
-          if (key === 'image' && formData[key] instanceof File) {
-            formDataWithImage.append('image', formData[key]);
-          } else {
-            formDataWithImage.append(key, formData[key]);
-          }
-        });
-
-        const response = await api.post('/inventory', formDataWithImage, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        });
-        itemId = response.data.data._id;
+        // If there's an image, use FormData for multipart upload
+        if (formData.image && formData.image instanceof File) {
+          const formDataWithImage = new FormData();
+          // Add all form fields to FormData
+          Object.keys(formData).forEach(key => {
+            if (key === 'image') {
+              formDataWithImage.append('image', formData[key]);
+            } else {
+              formDataWithImage.append(key, formData[key]);
+            }
+          });
+          
+          // Use axios directly to avoid interceptor issues with FormData
+          const response = await axios.post(`${api.defaults.baseURL}/inventory`, formDataWithImage, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          itemId = response.data.data._id;
+        } else {
+          // If no image, use regular JSON API
+          const response = await api.post('/inventory', formData);
+          itemId = response.data.data._id;
+        }
       }
 
-      // If there's an image to upload
-      if (formData.image && formData.image instanceof File) {
+      // If there's an image to upload and we're updating (not creating new)
+      if (isEditing && formData.image && formData.image instanceof File) {
         const formDataWithImage = new FormData();
-        formDataWithImage.append('file', formData.image);
+        formDataWithImage.append('image', formData.image);
         
-        await api.post(`/inventory/${itemId}/image`, formDataWithImage, {
+        // Use axios directly to avoid interceptor issues with FormData
+        await axios.post(`${api.defaults.baseURL}/inventory/${itemId}/image`, formDataWithImage, {
           headers: {
-            'Content-Type': 'multipart/form-data'
+            'Content-Type': 'multipart/form-data',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         });
       }
@@ -123,9 +136,13 @@ const InventoryPage = () => {
     
     // Set preview image if available
     if (item.image) {
-      // Use the base URL from our API utility
-      const baseUrl = api.defaults.baseURL.replace('/api', '');
-      setPreviewImage(`${baseUrl}${item.image}`);
+      // Handle both absolute URLs and relative paths
+      if (item.image.startsWith('http')) {
+        setPreviewImage(item.image);
+      } else {
+        const baseUrl = api.defaults.baseURL.replace('/api', '');
+        setPreviewImage(`${baseUrl}${item.image}`);
+      }
     } else {
       setPreviewImage(null);
     }
@@ -342,7 +359,14 @@ const InventoryPage = () => {
               <tr key={item._id}>
                 <td className="item-image">
                   {item.image ? (
-                    <img src={`${api.defaults.baseURL.replace('/api', '')}${item.image}`} alt={item.name} />
+                    <img 
+                      src={item.image.startsWith('http') ? item.image : `${api.defaults.baseURL.replace('/api', '')}${item.image}`} 
+                      alt={item.name} 
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://via.placeholder.com/100x100?text=No+Image';
+                      }}
+                    />
                   ) : (
                     <div className="no-image">No Image</div>
                   )}

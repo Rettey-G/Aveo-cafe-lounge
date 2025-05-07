@@ -8,7 +8,8 @@ const api = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
-  }
+  },
+  withCredentials: true // This helps with CORS issues when cookies need to be sent
 });
 
 // Add a request interceptor to add the auth token to every request
@@ -38,6 +39,16 @@ api.interceptors.response.use(
         window.location.href = '/login';
       }
     }
+    
+    // Handle 403 Forbidden errors (insufficient permissions)
+    if (error.response && error.response.status === 403) {
+      console.error('Permission denied. Your role may not have access to this resource.');
+      // We'll handle this in the component level, not redirecting automatically
+    }
+    
+    // Log all errors for debugging
+    console.error('API Error:', error.response?.data || error.message);
+    
     return Promise.reject(error);
   }
 );

@@ -12,8 +12,16 @@ function Navbar() {
   useEffect(() => {
     // Check user role from localStorage
     const role = localStorage.getItem('userRole');
+    const token = localStorage.getItem('token');
+    
+    // If no token, redirect to login
+    if (!token && window.location.pathname !== '/login') {
+      navigate('/login');
+      return;
+    }
+    
     setUserRole(role || '');
-  }, []);
+  }, [navigate]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
