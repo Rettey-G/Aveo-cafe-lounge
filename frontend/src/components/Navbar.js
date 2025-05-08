@@ -1,54 +1,73 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import './Navbar.css';
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  // Temporarily not using userRole since we're showing all links
-  // eslint-disable-next-line no-unused-vars
   const [userRole, setUserRole] = useState('');
   const navigate = useNavigate();
-  const navRef = React.useRef(null);
+  const location = useLocation();
+  const navbarRef = useRef(null);
+  const menuRef = useRef(null);
 
+  // Check authentication and user role on mount and path change
   useEffect(() => {
-    // Check user role from localStorage
     const role = localStorage.getItem('userRole');
     const token = localStorage.getItem('token');
     
-    // If no token, redirect to login
-    if (!token && window.location.pathname !== '/login') {
+    if (!token && location.pathname !== '/login') {
       navigate('/login');
       return;
     }
     
     setUserRole(role || '');
-  }, [navigate]);
+    
+    // Close mobile menu on route change
+    setIsMenuOpen(false);
+  }, [navigate, location.pathname]);
   
-  // Handle click outside to close the mobile menu
+  // Handle click outside to close mobile menu
   useEffect(() => {
-    function handleClickOutside(event) {
-      if (navRef.current && !navRef.current.contains(event.target) && isMenuOpen) {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target) &&
+          !event.target.classList.contains('mobile-menu-toggle')) {
         setIsMenuOpen(false);
       }
-    }
+    };
     
-    // Add event listener when menu is open
     if (isMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
       document.addEventListener('touchstart', handleClickOutside);
     }
     
-    // Cleanup the event listener
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('touchstart', handleClickOutside);
     };
   }, [isMenuOpen]);
+  
+  // Handle scroll to show/hide navbar shadow
+  useEffect(() => {
+    const handleScroll = () => {
+      if (navbarRef.current) {
+        if (window.scrollY > 0) {
+          navbarRef.current.classList.add('scrolled');
+        } else {
+          navbarRef.current.classList.remove('scrolled');
+        }
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
+  // Toggle mobile menu open/closed
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  // Handle user logout
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('userRole');
@@ -56,98 +75,98 @@ function Navbar() {
   };
 
   return (
-    <nav className="navbar" ref={navRef}>
+    <nav className="navbar" ref={navbarRef}>
       <div className="navbar-container">
         <Link to="/" className="navbar-logo">
           Aveo Cafe & Lounge
         </Link>
 
-        <div className="mobile-menu-icon" onClick={toggleMenu}>
-          {isMenuOpen ? '✕' : '☰'}
-        </div>
+        <button 
+          className="mobile-menu-toggle" 
+          onClick={toggleMenu}
+          aria-label="Toggle menu"
+        >
+          <span className="menu-icon">{isMenuOpen ? '✕' : '☰'}</span>
+        </button>
 
-        <ul className={`nav-menu ${isMenuOpen ? 'active' : ''}`}>
-          <li className="nav-item">
-            <Link to="/" className="nav-links" onClick={() => setIsMenuOpen(false)}>
-              Home
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link to="/menu" className="nav-links" onClick={() => setIsMenuOpen(false)}>
-              Menu
-            </Link>
-          </li>
+        <div className={`nav-menu-container ${isMenuOpen ? 'active' : ''}`} ref={menuRef}>
+          <ul className="nav-menu">
+            {/* Admin Routes */}
+            <li className="nav-category">
+              <span className="category-label">Management</span>
+              <ul className="category-menu">
+                <li className="nav-item">
+                  <Link to="/users" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                    <span className="link-icon">👥</span> Users
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link to="/inventory" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                    <span className="link-icon">📦</span> Inventory
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link to="/menu-management" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                    <span className="link-icon">🍽️</span> Menu Items
+                  </Link>
+                </li>
+              </ul>
+            </li>
+
+            {/* Staff Routes */}
+            <li className="nav-category">
+              <span className="category-label">Operations</span>
+              <ul className="category-menu">
+                <li className="nav-item">
+                  <Link to="/table-layout" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                    <span className="link-icon">🪑</span> Tables
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link to="/take-order" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                    <span className="link-icon">📝</span> New Order
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link to="/orders" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                    <span className="link-icon">📋</span> Orders
+                  </Link>
+                </li>
+              </ul>
+            </li>
+
+            {/* Financial Routes */}
+            <li className="nav-category">
+              <span className="category-label">Billing</span>
+              <ul className="category-menu">
+                <li className="nav-item">
+                  <Link to="/invoices" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                    <span className="link-icon">🧾</span> Create Invoice
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link to="/all-invoices" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                    <span className="link-icon">📊</span> All Invoices
+                  </Link>
+                </li>
+              </ul>
+            </li>
+          </ul>
           
-          {/* Management Routes - Temporarily showing for all users */}
-          <li className="nav-item">
-            <Link to="/users" className="nav-links" onClick={() => setIsMenuOpen(false)}>
-              User Management
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link to="/inventory" className="nav-links" onClick={() => setIsMenuOpen(false)}>
-              Inventory
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link to="/menu-management" className="nav-links" onClick={() => setIsMenuOpen(false)}>
-              Manage Menu
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link to="/invoices" className="nav-links" onClick={() => setIsMenuOpen(false)}>
-              Create Invoice
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link to="/all-invoices" className="nav-links" onClick={() => setIsMenuOpen(false)}>
-              All Invoices
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link to="/orders" className="nav-links" onClick={() => setIsMenuOpen(false)}>
-              Manage Orders
-            </Link>
-          </li>
-          
-          {/* Staff Routes */}
-          <li className="nav-item">
-            <Link to="/table-layout" className="nav-links" onClick={() => setIsMenuOpen(false)}>
-              Table Layout
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link to="/take-order" className="nav-links" onClick={() => setIsMenuOpen(false)}>
-              Take Order
-            </Link>
-          </li>
-          
-          {/* General Routes */}
-          <li className="nav-item">
-            <Link to="/about" className="nav-links" onClick={() => setIsMenuOpen(false)}>
-              About
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link to="/contact" className="nav-links" onClick={() => setIsMenuOpen(false)}>
-              Contact
-            </Link>
-          </li>
-          
-          {/* Logout Button - Always visible */}
-          <li className="nav-item">
+          {/* Logout Button */}
+          <div className="nav-footer">
             <button
-              className="nav-links logout-btn"
-              onClick={() => {
-                handleLogout();
-                setIsMenuOpen(false);
-              }}
+              className="logout-btn"
+              onClick={handleLogout}
             >
-              Logout
+              <span className="link-icon">🚪</span> Logout
             </button>
-          </li>
-        </ul>
+          </div>
+        </div>
       </div>
+      
+      {/* Backdrop overlay for mobile */}
+      {isMenuOpen && <div className="menu-backdrop" onClick={() => setIsMenuOpen(false)} />}
     </nav>
   );
 }
