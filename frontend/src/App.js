@@ -122,7 +122,6 @@ function App() {
                 </ProtectedRoute>
               } 
             />
-        </Routes>
           </Routes>
         </main>
         <Footer />
