@@ -102,16 +102,6 @@ function Navbar() {
                 <span className="link-icon">📋</span> Menu
               </Link>
             </li>
-            <li className="nav-item">
-              <Link to="/about" className="nav-link" onClick={() => setIsMenuOpen(false)}>
-                <span className="link-icon">ℹ️</span> About
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/contact" className="nav-link" onClick={() => setIsMenuOpen(false)}>
-                <span className="link-icon">📞</span> Contact
-              </Link>
-            </li>
 
             {/* Admin/Manager Routes */}
             {(userRole === 'admin' || userRole === 'manager') && (

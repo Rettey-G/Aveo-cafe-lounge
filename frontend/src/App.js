@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Footer from './components/Footer';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Menu from './pages/Menu';
@@ -38,9 +39,9 @@ function App() {
   return (
     <Router>
       <div className="app">
-      <Navbar />
+        <Navbar />
         <main className="main-content">
-        <Routes>
+          <Routes>
             {/* Redirect root to login if not authenticated */}
             <Route path="/" element={
               <ProtectedRoute>
@@ -122,7 +123,9 @@ function App() {
               } 
             />
         </Routes>
+          </Routes>
         </main>
+        <Footer />
       </div>
     </Router>
   );
