@@ -91,6 +91,33 @@ function Navbar() {
 
         <div className={`nav-menu-container ${isMenuOpen ? 'active' : ''}`} ref={menuRef}>
           <ul className="nav-menu">
+            {/* General Routes */}
+            <li className="nav-category">
+              <span className="category-label">General</span>
+              <ul className="category-menu">
+                <li className="nav-item">
+                  <Link to="/" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                    <span className="link-icon">🏠</span> Home
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link to="/menu" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                    <span className="link-icon">📋</span> Menu
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link to="/about" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                    <span className="link-icon">ℹ️</span> About
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link to="/contact" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                    <span className="link-icon">📞</span> Contact
+                  </Link>
+                </li>
+              </ul>
+            </li>
+            
             {/* Admin Routes */}
             <li className="nav-category">
               <span className="category-label">Management</span>

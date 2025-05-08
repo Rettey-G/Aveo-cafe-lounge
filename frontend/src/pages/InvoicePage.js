@@ -95,6 +95,20 @@ const InvoicePage = () => {
   };
 
   const handleGenerateInvoice = async () => {
+    if (selectedItems.length === 0) {
+      alert('Please add items to the invoice before generating.');
+      return;
+    }
+
+    // Check for any missing or invalid data
+    for (const item of selectedItems) {
+      if (!item._id || !item.name || isNaN(parseFloat(item.price))) {
+        console.error('Invalid item data:', item);
+        alert('Some items have invalid data. Please refresh the page and try again.');
+        return;
+      }
+    }
+    
     // Make sure we have valid data that won't cause server errors
     const invoiceData = {
       invoiceNumber,
@@ -120,19 +134,28 @@ const InvoicePage = () => {
     };
 
     try {
-      console.log('Sending invoice data:', invoiceData);
-      // Log the data being sent
-      console.log('Sending invoice:', invoiceData);
+      // Show loading indicator or disable button here if needed
       
+      // Log the data being sent for debugging
+      console.log('Sending invoice data:', JSON.stringify(invoiceData));
+      
+      // Send the invoice data to the server
       const response = await api.post('/invoices', invoiceData);
       console.log('Invoice response:', response.data);
       
-      // Update inventory quantities
+      // If we get here, the invoice was created successfully
+      // Now update inventory quantities
       try {
         for (const item of selectedItems) {
-          if (item._id && item.stockQuantity) {
+          if (item._id) {
+            // Get current stock first to be safe
+            const menuItemResponse = await api.get(`/menu-items/${item._id}`);
+            const currentStock = menuItemResponse.data.stockQuantity || 0;
+            
+            // Calculate new stock and update
+            const newStock = Math.max(0, currentStock - item.quantity);
             await api.put(`/menu-items/${item._id}`, {
-              stockQuantity: Math.max(0, item.stockQuantity - item.quantity)
+              stockQuantity: newStock
             });
           }
         }
@@ -151,9 +174,22 @@ const InvoicePage = () => {
         address: '',
       });
       generateInvoiceNumber();
+      return true; // Success
     } catch (error) {
-      console.error('Error generating invoice:', error);
-      alert('Error generating invoice. Please try again.');
+      console.error('Error generating invoice:', error.response?.data || error.message || error);
+      
+      // More informative error messages based on error type
+      if (error.response?.status === 400) {
+        alert('Invalid invoice data. Please check all fields and try again.');
+      } else if (error.response?.status === 401) {
+        alert('Your session has expired. Please login again.');
+        // Redirect to login page if needed
+      } else if (error.response?.status === 500) {
+        alert('Server error while generating invoice. Please try again later.');
+      } else {
+        alert('Error generating invoice. Please try again.');
+      }
+      return false; // Failed
     }
   };
 
