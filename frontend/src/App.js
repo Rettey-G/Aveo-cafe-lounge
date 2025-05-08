@@ -7,7 +7,7 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import InventoryPage from './pages/InventoryPage';
 import TableLayout from './pages/TableLayout';
-import OrderTakingPage from './pages/OrderTakingPage';
+import TakeOrderPage from './pages/TakeOrderPage';
 import InvoicePage from './pages/InvoicePage';
 import AllInvoicesPage from './pages/AllInvoicesPage';
 import OrdersPage from './pages/OrdersPage';
@@ -117,7 +117,7 @@ function App() {
               path="/take-order" 
               element={
                 <ProtectedRoute allowedRoles={['admin', 'manager', 'waiter', 'cashier']}>
-                  <OrderTakingPage />
+                  <TakeOrderPage />
                 </ProtectedRoute>
               } 
             />
