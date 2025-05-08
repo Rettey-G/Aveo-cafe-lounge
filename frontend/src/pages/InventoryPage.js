@@ -69,18 +69,18 @@ const InventoryPage = () => {
       let itemId;
       
       // Create FormData object for file upload
-      const formData = new FormData();
+      const formDataObj = new FormData();
       
       // Add all form fields to FormData
-      Object.keys(formValues).forEach(key => {
+      Object.keys(formData).forEach(key => {
         if (key !== 'image') {
-          formData.append(key, formValues[key] || ''); // Add empty string for null values
+          formDataObj.append(key, formData[key] || ''); // Add empty string for null values
         }
       });
       
       // Add image if it exists
-      if (image) {
-        formData.append('image', image);
+      if (formData.image) {
+        formDataObj.append('image', formData.image);
       }
       
       // Fix URLs by removing /api suffix and then adding it properly
@@ -90,7 +90,7 @@ const InventoryPage = () => {
         // Update existing inventory item
         if (formData.image) {
           // If updating with image, use axios directly
-          const response = await axios.put(`${baseUrl}/api/inventory/${currentItemId}`, formData, {
+          const response = await axios.put(`${baseUrl}/api/inventory/${currentItemId}`, formDataObj, {
             headers: {
               'Content-Type': 'multipart/form-data',
               'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -112,7 +112,7 @@ const InventoryPage = () => {
         // Create new inventory item
         if (formData.image) {
           // If creating with image, use axios directly
-          const response = await axios.post(`${baseUrl}/api/inventory`, formData, {
+          const response = await axios.post(`${baseUrl}/api/inventory`, formDataObj, {
             headers: {
               'Content-Type': 'multipart/form-data',
               'Authorization': `Bearer ${localStorage.getItem('token')}`
