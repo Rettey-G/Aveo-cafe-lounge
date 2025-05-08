@@ -6,33 +6,34 @@ import './TakeOrderPage.css';
 const TakeOrderPage = () => {
   const navigate = useNavigate();
   const [menuItems, setMenuItems] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [categories, setCategories] = useState(['Coffee', 'Tea', 'Juice', 'Smoothie', 'Bakery']);
+  const [selectedCategory, setSelectedCategory] = useState('Coffee');
   const [selectedTable, setSelectedTable] = useState(null);
   const [tables, setTables] = useState([]);
   const [currentOrder, setCurrentOrder] = useState([]);
   const [customerName, setCustomerName] = useState('');
   const [subtotal, setSubtotal] = useState(0);
   const [tax, setTax] = useState(0);
-  const [serviceCharge, setServiceCharge] = useState(0);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [orderType, setOrderType] = useState('dine-in'); // dine-in or take-away
+  const [orderType, setOrderType] = useState('dine-in');
+  const [selectedSize, setSelectedSize] = useState('medium');
+  const [customizations, setCustomizations] = useState({
+    extraShot: false,
+    whipCream: false,
+    caramelSyrup: false,
+    chocolateSyrup: false,
+    soyMilk: false,
+    freshMilk: true
+  });
 
-  // Fetch menu items and tables on component mount
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetch menu items
         const menuResponse = await api.get('/menu-items');
         setMenuItems(menuResponse.data);
         
-        // Extract unique categories
-        const uniqueCategories = [...new Set(menuResponse.data.map(item => item.category))];
-        setCategories(uniqueCategories);
-        
-        // Fetch available tables
         const tablesResponse = await api.get('/tables');
         setTables(tablesResponse.data);
       } catch (error) {
@@ -45,64 +46,73 @@ const TakeOrderPage = () => {
     fetchData();
   }, []);
   
-  // Calculate totals whenever current order changes
   useEffect(() => {
     const calcSubtotal = currentOrder.reduce(
-      (sum, item) => sum + (item.price * item.quantity), 0
+      (sum, item) => sum + calculateItemTotal(item), 0
     );
     setSubtotal(calcSubtotal);
     
-    const calcServiceCharge = calcSubtotal * 0.10; // 10% service charge
-    setServiceCharge(calcServiceCharge);
-    
-    const calcTax = calcSubtotal * 0.16; // 16% tax
+    const calcTax = calcSubtotal * 0.16;
     setTax(calcTax);
     
-    setTotal(calcSubtotal + calcServiceCharge + calcTax);
+    setTotal(calcSubtotal + calcTax);
   }, [currentOrder]);
-  
-  // Filter menu items by category
-  const filteredItems = selectedCategory === 'all' 
-    ? menuItems 
-    : menuItems.filter(item => item.category === selectedCategory);
+
+  const calculateItemTotal = (item) => {
+    let price = item.price;
     
-  // Add item to current order
+    // Add size adjustments
+    if (item.size === 'large') price += 1.00;
+    if (item.size === 'small') price -= 0.50;
+    
+    // Add customization costs
+    if (item.customizations) {
+      if (item.customizations.extraShot) price += 0.75;
+      if (item.customizations.whipCream) price += 0.50;
+      if (item.customizations.caramelSyrup) price += 0.50;
+      if (item.customizations.chocolateSyrup) price += 0.50;
+      if (item.customizations.soyMilk) price += 0.75;
+    }
+    
+    return price * item.quantity;
+  };
+
   const addToOrder = (item) => {
-    const existingItemIndex = currentOrder.findIndex(orderItem => orderItem._id === item._id);
+    const orderItem = {
+      ...item,
+      size: selectedSize,
+      customizations: { ...customizations },
+      quantity: 1
+    };
+
+    const existingItemIndex = currentOrder.findIndex(orderItem => 
+      orderItem._id === item._id && 
+      orderItem.size === selectedSize &&
+      JSON.stringify(orderItem.customizations) === JSON.stringify(customizations)
+    );
     
     if (existingItemIndex >= 0) {
-      // Item already exists in order, increase quantity
       const updatedOrder = [...currentOrder];
       updatedOrder[existingItemIndex].quantity += 1;
       setCurrentOrder(updatedOrder);
     } else {
-      // Add new item to order
-      setCurrentOrder([...currentOrder, { ...item, quantity: 1 }]);
+      setCurrentOrder([...currentOrder, orderItem]);
     }
   };
-  
-  // Remove item from order
-  const removeFromOrder = (itemId) => {
-    setCurrentOrder(currentOrder.filter(item => item._id !== itemId));
-  };
-  
-  // Update item quantity
-  const updateQuantity = (itemId, newQuantity) => {
-    if (newQuantity < 1) return;
-    
-    const updatedOrder = currentOrder.map(item => 
-      item._id === itemId ? { ...item, quantity: newQuantity } : item
-    );
-    
+
+  const removeFromOrder = (index) => {
+    const updatedOrder = currentOrder.filter((_, i) => i !== index);
     setCurrentOrder(updatedOrder);
   };
-  
-  // Handle table selection
-  const selectTable = (table) => {
-    setSelectedTable(table);
+
+  const updateQuantity = (index, newQuantity) => {
+    if (newQuantity < 1) return;
+    
+    const updatedOrder = [...currentOrder];
+    updatedOrder[index].quantity = newQuantity;
+    setCurrentOrder(updatedOrder);
   };
-  
-  // Process order
+
   const processOrder = async () => {
     if (currentOrder.length === 0) {
       alert('Please add items to the order');
@@ -121,28 +131,35 @@ const TakeOrderPage = () => {
         items: currentOrder.map(item => ({
           itemId: item._id,
           name: item.name,
-          price: item.price,
-          quantity: item.quantity
+          price: calculateItemTotal(item) / item.quantity,
+          quantity: item.quantity,
+          size: item.size,
+          customizations: item.customizations
         })),
         table: selectedTable ? selectedTable._id : null,
         customerName: customerName || 'Guest',
         subtotal,
-        serviceCharge,
         tax,
         total,
         type: orderType,
-        status: 'pending',
-        createdAt: new Date().toISOString()
+        status: 'pending'
       };
       
       const response = await api.post('/orders', orderData);
       
       if (response.data) {
         alert('Order placed successfully!');
-        // Reset order
         setCurrentOrder([]);
         setCustomerName('');
         setSelectedTable(null);
+        setCustomizations({
+          extraShot: false,
+          whipCream: false,
+          caramelSyrup: false,
+          chocolateSyrup: false,
+          soyMilk: false,
+          freshMilk: true
+        });
       }
     } catch (error) {
       console.error('Error processing order:', error);
@@ -151,79 +168,17 @@ const TakeOrderPage = () => {
       setLoading(false);
     }
   };
-  
-  // Generate printable receipt
-  const printReceipt = () => {
-    if (currentOrder.length === 0) {
-      alert('Please add items to the order');
-      return;
-    }
-    
-    // Open print dialog
-    window.print();
-  };
-  
-  // Convert price to string with 2 decimal places
-  const formatPrice = (price) => {
-    return parseFloat(price).toFixed(2);
-  };
-  
-  // Proceed to payment/invoice
-  const goToInvoice = () => {
-    if (currentOrder.length === 0) {
-      alert('Please add items to the order');
-      return;
-    }
-    
-    // Save current order to local storage to be accessed by the invoice page
-    localStorage.setItem('currentOrder', JSON.stringify({
-      items: currentOrder,
-      table: selectedTable,
-      customerName,
-      subtotal,
-      serviceCharge,
-      tax,
-      total,
-      type: orderType
-    }));
-    
-    // Navigate to invoice page
-    navigate('/invoices');
-  };
 
   return (
     <div className="take-order-page">
       <h1>Take Order</h1>
       
       <div className="order-container">
-        {/* Left side - Menu items */}
         <div className="menu-section">
-          <div className="order-type-selector">
-            <button 
-              className={`order-type-btn ${orderType === 'dine-in' ? 'active' : ''}`}
-              onClick={() => setOrderType('dine-in')}
-            >
-              <span role="img" aria-label="Dine In">🍽️</span> Dine In
-            </button>
-            <button 
-              className={`order-type-btn ${orderType === 'take-away' ? 'active' : ''}`}
-              onClick={() => setOrderType('take-away')}
-            >
-              <span role="img" aria-label="Take Away">🥡</span> Take Away
-            </button>
-          </div>
-          
-          {/* Categories */}
-          <div className="category-selector">
-            <button 
-              className={`category-btn ${selectedCategory === 'all' ? 'active' : ''}`}
-              onClick={() => setSelectedCategory('all')}
-            >
-              All
-            </button>
+          <div className="categories">
             {categories.map(category => (
-              <button 
-                key={category} 
+              <button
+                key={category}
                 className={`category-btn ${selectedCategory === category ? 'active' : ''}`}
                 onClick={() => setSelectedCategory(category)}
               >
@@ -231,170 +186,192 @@ const TakeOrderPage = () => {
               </button>
             ))}
           </div>
-          
-          {/* Menu Items */}
-          <div className="menu-items-grid">
-            {loading ? (
-              <p>Loading menu items...</p>
-            ) : (
-              filteredItems.map(item => (
-                <div key={item._id} className="menu-item-card" onClick={() => addToOrder(item)}>
-                  <div className="menu-item-image">
-                    {item.image ? (
-                      <img src={item.image} alt={item.name} />
-                    ) : (
-                      <div className="placeholder-image">
-                        <span role="img" aria-label="Food">🍽️</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="menu-item-details">
-                    <h3>{item.name}</h3>
-                    <p>Rs. {formatPrice(item.price)}</p>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-        
-        {/* Right side - Current order */}
-        <div className="order-summary">
-          {/* Customer & Table Info */}
-          <div className="order-info">
-            {orderType === 'dine-in' && (
-              <div className="table-selector">
-                <h3>Select Table</h3>
-                <div className="tables-grid">
-                  {tables.map(table => (
-                    <button
-                      key={table._id}
-                      className={`table-btn ${selectedTable && selectedTable._id === table._id ? 'active' : ''} ${table.status === 'occupied' ? 'occupied' : ''}`}
-                      onClick={() => selectTable(table)}
-                      disabled={table.status === 'occupied' && (!selectedTable || selectedTable._id !== table._id)}
-                    >
-                      {table.number}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            <div className="customer-info">
-              <label htmlFor="customerName">Customer Name:</label>
-              <input
-                type="text"
-                id="customerName"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                placeholder="Guest"
-              />
+
+          <div className="customization-options">
+            <div className="size-options">
+              <button
+                className={`size-btn ${selectedSize === 'small' ? 'active' : ''}`}
+                onClick={() => setSelectedSize('small')}
+              >
+                Small
+              </button>
+              <button
+                className={`size-btn ${selectedSize === 'medium' ? 'active' : ''}`}
+                onClick={() => setSelectedSize('medium')}
+              >
+                Medium
+              </button>
+              <button
+                className={`size-btn ${selectedSize === 'large' ? 'active' : ''}`}
+                onClick={() => setSelectedSize('large')}
+              >
+                Large
+              </button>
+            </div>
+
+            <div className="add-ons">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={customizations.extraShot}
+                  onChange={(e) => setCustomizations({ ...customizations, extraShot: e.target.checked })}
+                />
+                Extra Shot (+$0.75)
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={customizations.whipCream}
+                  onChange={(e) => setCustomizations({ ...customizations, whipCream: e.target.checked })}
+                />
+                Whip Cream (+$0.50)
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={customizations.caramelSyrup}
+                  onChange={(e) => setCustomizations({ ...customizations, caramelSyrup: e.target.checked })}
+                />
+                Caramel Syrup (+$0.50)
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={customizations.chocolateSyrup}
+                  onChange={(e) => setCustomizations({ ...customizations, chocolateSyrup: e.target.checked })}
+                />
+                Chocolate Syrup (+$0.50)
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={customizations.soyMilk}
+                  onChange={(e) => setCustomizations({ ...customizations, soyMilk: e.target.checked })}
+                />
+                Soy Milk (+$0.75)
+              </label>
             </div>
           </div>
-          
-          {/* Current Order Items */}
-          <div className="current-order">
-            <h3>Current Order</h3>
-            
-            {currentOrder.length === 0 ? (
-              <p className="empty-order">No items added yet</p>
-            ) : (
-              <div className="order-items">
-                {currentOrder.map(item => (
-                  <div key={item._id} className="order-item">
-                    <div className="order-item-details">
-                      <h4>{item.name}</h4>
-                      <p>Rs. {formatPrice(item.price)} x {item.quantity}</p>
-                    </div>
-                    <div className="order-item-actions">
-                      <button className="quantity-btn" onClick={() => updateQuantity(item._id, item.quantity - 1)}>-</button>
-                      <span>{item.quantity}</span>
-                      <button className="quantity-btn" onClick={() => updateQuantity(item._id, item.quantity + 1)}>+</button>
-                      <button className="remove-btn" onClick={() => removeFromOrder(item._id)}>×</button>
-                    </div>
-                    <div className="order-item-total">
-                      Rs. {formatPrice(item.price * item.quantity)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+
+          <div className="menu-grid">
+            {menuItems
+              .filter(item => item.category === selectedCategory)
+              .map(item => (
+                <div
+                  key={item._id}
+                  className="menu-item"
+                  onClick={() => addToOrder(item)}
+                >
+                  {item.image && <img src={item.image} alt={item.name} />}
+                  <h3>{item.name}</h3>
+                  <p>${item.price.toFixed(2)}</p>
+                </div>
+              ))}
           </div>
-          
-          {/* Order Totals */}
+        </div>
+
+        <div className="order-summary">
+          <div className="order-type-toggle">
+            <button
+              className={`order-type-btn ${orderType === 'dine-in' ? 'active' : ''}`}
+              onClick={() => setOrderType('dine-in')}
+            >
+              Dine In
+            </button>
+            <button
+              className={`order-type-btn ${orderType === 'take-away' ? 'active' : ''}`}
+              onClick={() => setOrderType('take-away')}
+            >
+              Take Away
+            </button>
+          </div>
+
+          {orderType === 'dine-in' && (
+            <div className="table-grid">
+              {tables.map(table => (
+                <button
+                  key={table._id}
+                  className={`table-btn ${selectedTable?._id === table._id ? 'selected' : ''} ${table.isOccupied ? 'occupied' : ''}`}
+                  onClick={() => !table.isOccupied && selectTable(table)}
+                  disabled={table.isOccupied}
+                >
+                  {table.number}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="order-items">
+            {currentOrder.map((item, index) => (
+              <div key={index} className="order-item">
+                <div className="item-details">
+                  <h4>{item.name}</h4>
+                  <p>
+                    Size: {item.size}
+                    {Object.entries(item.customizations)
+                      .filter(([key, value]) => value && key !== 'freshMilk')
+                      .map(([key]) => ` + ${key}`)
+                      .join('')}
+                  </p>
+                </div>
+                <div className="quantity-controls">
+                  <button
+                    className="quantity-btn"
+                    onClick={() => updateQuantity(index, item.quantity - 1)}
+                  >
+                    -
+                  </button>
+                  <span>{item.quantity}</span>
+                  <button
+                    className="quantity-btn"
+                    onClick={() => updateQuantity(index, item.quantity + 1)}
+                  >
+                    +
+                  </button>
+                  <button
+                    className="remove-btn"
+                    onClick={() => removeFromOrder(index)}
+                  >
+                    ×
+                  </button>
+                </div>
+                <div className="item-total">
+                  ${calculateItemTotal(item).toFixed(2)}
+                </div>
+              </div>
+            ))}
+          </div>
+
           <div className="order-totals">
             <div className="total-row">
               <span>Subtotal:</span>
-              <span>Rs. {formatPrice(subtotal)}</span>
+              <span>${subtotal.toFixed(2)}</span>
             </div>
             <div className="total-row">
-              <span>Service Charge (10%):</span>
-              <span>Rs. {formatPrice(serviceCharge)}</span>
-            </div>
-            <div className="total-row">
-              <span>GST (16%):</span>
-              <span>Rs. {formatPrice(tax)}</span>
+              <span>Tax (16%):</span>
+              <span>${tax.toFixed(2)}</span>
             </div>
             <div className="total-row grand-total">
               <span>Total:</span>
-              <span>Rs. {formatPrice(total)}</span>
+              <span>${total.toFixed(2)}</span>
             </div>
           </div>
-          
-          {/* Action Buttons */}
-          <div className="order-actions">
-            <button 
-              className="action-btn cancel-btn" 
-              onClick={() => setCurrentOrder([])}
-              disabled={currentOrder.length === 0}
-            >
-              Cancel Order
-            </button>
-            <button 
-              className="action-btn print-btn" 
-              onClick={printReceipt}
-              disabled={currentOrder.length === 0}
-            >
-              Print Receipt
-            </button>
-            <button 
-              className="action-btn process-btn" 
+
+          <div className="action-buttons">
+            <button
+              className="action-btn process-btn"
               onClick={processOrder}
-              disabled={currentOrder.length === 0 || (orderType === 'dine-in' && !selectedTable)}
+              disabled={loading}
             >
-              Process Order
+              {loading ? 'Processing...' : 'Process Order'}
             </button>
-            <button 
-              className="action-btn invoice-btn" 
-              onClick={goToInvoice}
-              disabled={currentOrder.length === 0}
+            <button
+              className="action-btn invoice-btn"
+              onClick={() => navigate('/invoices')}
+              disabled={loading || currentOrder.length === 0}
             >
               Generate Invoice
             </button>
-          </div>
-          
-          {/* Numpad for quick entry (optional) */}
-          <div className="numpad">
-            <div className="numpad-row">
-              <button className="numpad-btn">1</button>
-              <button className="numpad-btn">2</button>
-              <button className="numpad-btn">3</button>
-            </div>
-            <div className="numpad-row">
-              <button className="numpad-btn">4</button>
-              <button className="numpad-btn">5</button>
-              <button className="numpad-btn">6</button>
-            </div>
-            <div className="numpad-row">
-              <button className="numpad-btn">7</button>
-              <button className="numpad-btn">8</button>
-              <button className="numpad-btn">9</button>
-            </div>
-            <div className="numpad-row">
-              <button className="numpad-btn">.</button>
-              <button className="numpad-btn">0</button>
-              <button className="numpad-btn">C</button>
-            </div>
           </div>
         </div>
       </div>
