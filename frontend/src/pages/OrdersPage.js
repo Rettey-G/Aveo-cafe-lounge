@@ -89,12 +89,18 @@ const OrdersPage = () => {
               {filteredOrders.map(order => (
                 <tr key={order._id} className={`status-${order.status || 'pending'}`}>
                   <td>{order._id ? order._id.substring(order._id.length - 6) : 'N/A'}</td>
-                  <td>{order.tableNumber || 'Table ' + (order.table || 'N/A')}</td>
+                  <td>
+                    {typeof order.table === 'object' && order.table ? 
+                      `Table ${order.table.number || 'Unknown'}` : 
+                      (order.tableNumber ? `Table ${order.tableNumber}` : 'Table Unknown')}
+                  </td>
                   <td>
                     <ul className="order-items">
                       {order.items && order.items.length > 0 ? order.items.map((item, index) => (
                         <li key={index}>
-                          {item.name || 'Unknown Item'} x {item.quantity || 1} - Rs. {parseFloat(item.price || 0).toFixed(2)}
+                          {typeof item === 'object' ? 
+                            `${item.name || 'Unknown Item'} x ${item.quantity || 1} - Rs. ${parseFloat(item.price || 0).toFixed(2)}` : 
+                            `${item || 'Unknown Item'}`}
                         </li>
                       )) : <li>No items</li>}
                     </ul>

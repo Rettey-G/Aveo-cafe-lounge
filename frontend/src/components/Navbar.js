@@ -8,6 +8,7 @@ function Navbar() {
   // eslint-disable-next-line no-unused-vars
   const [userRole, setUserRole] = useState('');
   const navigate = useNavigate();
+  const navRef = React.useRef(null);
 
   useEffect(() => {
     // Check user role from localStorage
@@ -22,6 +23,27 @@ function Navbar() {
     
     setUserRole(role || '');
   }, [navigate]);
+  
+  // Handle click outside to close the mobile menu
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (navRef.current && !navRef.current.contains(event.target) && isMenuOpen) {
+        setIsMenuOpen(false);
+      }
+    }
+    
+    // Add event listener when menu is open
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+    }
+    
+    // Cleanup the event listener
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [isMenuOpen]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -34,7 +56,7 @@ function Navbar() {
   };
 
   return (
-    <nav className="navbar">
+    <nav className="navbar" ref={navRef}>
       <div className="navbar-container">
         <Link to="/" className="navbar-logo">
           Aveo Cafe & Lounge
