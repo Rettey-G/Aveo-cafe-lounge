@@ -91,13 +91,76 @@ function Navbar() {
 
         <div className={`nav-menu-container ${isMenuOpen ? 'active' : ''}`} ref={menuRef}>
           <ul className="nav-menu">
-            {/* General Routes */}
-            <li className="nav-category">
-              <span className="category-label">General</span>
-              <ul className="category-menu">
+            {/* Public Routes */}
+            <li className="nav-item">
+              <Link to="/" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                <span className="link-icon">🏠</span> Home
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link to="/menu" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                <span className="link-icon">📋</span> Menu
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link to="/about" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                <span className="link-icon">ℹ️</span> About
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link to="/contact" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                <span className="link-icon">📞</span> Contact
+              </Link>
+            </li>
+
+            {/* Admin/Manager Routes */}
+            {(userRole === 'admin' || userRole === 'manager') && (
+              <>
                 <li className="nav-item">
-                  <Link to="/" className="nav-link" onClick={() => setIsMenuOpen(false)}>
-                    <span className="link-icon">🏠</span> Home
+                  <Link to="/users" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                    <span className="link-icon">👥</span> Users
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link to="/inventory" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                    <span className="link-icon">📦</span> Inventory
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link to="/menu-items" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                    <span className="link-icon">🍽️</span> Menu Items
+                  </Link>
+                </li>
+              </>
+            )}
+
+            {/* Staff Routes */}
+            {(userRole === 'admin' || userRole === 'manager' || userRole === 'waiter') && (
+              <>
+                <li className="nav-item">
+                  <Link to="/table-layout" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                    <span className="link-icon">🪑</span> Tables
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link to="/take-order" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                    <span className="link-icon">📝</span> New Order
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link to="/orders" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                    <span className="link-icon">📋</span> Orders
+                  </Link>
+                </li>
+              </>
+            )}
+
+            {/* Logout */}
+            <li className="nav-item">
+              <button className="nav-link logout-btn" onClick={handleLogout}>
+                <span className="link-icon">🚪</span> Logout
+              </button>
+            </li>
                   </Link>
                 </li>
                 <li className="nav-item">

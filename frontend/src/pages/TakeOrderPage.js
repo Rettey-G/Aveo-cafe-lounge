@@ -169,6 +169,10 @@ const TakeOrderPage = () => {
     }
   };
 
+  const selectTable = (table) => {
+    setSelectedTable(table);
+  };
+
   return (
     <div className="take-order-page">
       <h1>Take Order</h1>
