@@ -130,11 +130,41 @@ const TableLayout = () => {
   const handleDrag = useCallback((e) => {
     if (!isDragging || !selectedTable) return;
 
+    // Get container bounds to prevent tables from being dragged outside
+    const container = layoutRef.current;
+    const containerRect = container ? container.getBoundingClientRect() : null;
+
+    // Calculate new position based on mouse coordinates
+    let newX = e.clientX - dragStart.x;
+    let newY = e.clientY - dragStart.y;
+
+    // Constrain position within container if container exists
+    if (containerRect) {
+      const tableElement = document.querySelector(`.table-item.selected`);
+      const tableRect = tableElement ? tableElement.getBoundingClientRect() : null;
+      
+      if (tableRect) {
+        // Make sure table stays within the container boundaries
+        const tableWidth = tableRect.width;
+        const tableHeight = tableRect.height;
+        
+        // Adjust bounds
+        const minX = 0;
+        const maxX = containerRect.width - tableWidth;
+        const minY = 0;
+        const maxY = containerRect.height - tableHeight;
+        
+        newX = Math.max(minX, Math.min(maxX, newX));
+        newY = Math.max(minY, Math.min(maxY, newY));
+      }
+    }
+
     const newPosition = {
-      x: e.clientX - dragStart.x,
-      y: e.clientY - dragStart.y
+      x: newX,
+      y: newY
     };
 
+    // Update table position in state
     setTables(tables.map(table => 
       table._id === selectedTable._id 
         ? { ...table, position: newPosition }

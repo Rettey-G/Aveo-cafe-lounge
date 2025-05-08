@@ -121,13 +121,26 @@ const InvoicePage = () => {
 
     try {
       console.log('Sending invoice data:', invoiceData);
-      await api.post('/invoices', invoiceData);
+      // Log the data being sent
+      console.log('Sending invoice:', invoiceData);
+      
+      const response = await api.post('/invoices', invoiceData);
+      console.log('Invoice response:', response.data);
+      
       // Update inventory quantities
-      for (const item of selectedItems) {
-        await api.put(`/menu-items/${item._id}`, {
-          stockQuantity: item.stockQuantity - item.quantity,
-        });
+      try {
+        for (const item of selectedItems) {
+          if (item._id && item.stockQuantity) {
+            await api.put(`/menu-items/${item._id}`, {
+              stockQuantity: Math.max(0, item.stockQuantity - item.quantity)
+            });
+          }
+        }
+      } catch (inventoryError) {
+        console.error('Error updating inventory:', inventoryError);
+        // Continue with invoice success even if inventory update fails
       }
+      
       alert('Invoice generated successfully!');
       // Reset form
       setSelectedItems([]);

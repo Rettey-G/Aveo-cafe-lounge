@@ -88,18 +88,18 @@ const OrdersPage = () => {
             <tbody>
               {filteredOrders.map(order => (
                 <tr key={order._id} className={`status-${order.status || 'pending'}`}>
-                  <td>{order._id.substring(order._id.length - 6)}</td>
-                  <td>{order.tableNumber}</td>
+                  <td>{order._id ? order._id.substring(order._id.length - 6) : 'N/A'}</td>
+                  <td>{order.tableNumber || 'Table ' + (order.table || 'N/A')}</td>
                   <td>
                     <ul className="order-items">
-                      {order.items.map((item, index) => (
+                      {order.items && order.items.length > 0 ? order.items.map((item, index) => (
                         <li key={index}>
-                          {item.name} x {item.quantity}
+                          {item.name || 'Unknown Item'} x {item.quantity || 1} - Rs. {parseFloat(item.price || 0).toFixed(2)}
                         </li>
-                      ))}
+                      )) : <li>No items</li>}
                     </ul>
                   </td>
-                  <td>${parseFloat(order.total).toFixed(2)}</td>
+                  <td>Rs. {parseFloat(order.total || 0).toFixed(2)}</td>
                   <td>{new Date(order.createdAt).toLocaleString()}</td>
                   <td>
                     <span className={`status-badge ${order.status || 'pending'}`}>

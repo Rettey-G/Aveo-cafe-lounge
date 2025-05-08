@@ -63,56 +63,73 @@ const InventoryPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    
     try {
       let itemId;
       
+      // Create FormData object for file upload
+      const formData = new FormData();
+      
+      // Add all form fields to FormData
+      Object.keys(formValues).forEach(key => {
+        if (key !== 'image') {
+          formData.append(key, formValues[key] || ''); // Add empty string for null values
+        }
+      });
+      
+      // Add image if it exists
+      if (image) {
+        formData.append('image', image);
+      }
+      
+      // Fix URLs by removing /api suffix and then adding it properly
+      const baseUrl = api.defaults.baseURL.replace('/api', '');
+      
       if (editMode) {
         // Update existing inventory item
-        const response = await api.put(`/inventory/${currentItemId}`, formData);
-        itemId = response.data.data._id;
-      } else {
-        // Create new inventory item
-        // If there's an image, use FormData for multipart upload
-        if (formData.image && formData.image instanceof File) {
-          const formDataWithImage = new FormData();
-          // Add all form fields to FormData
-          Object.keys(formData).forEach(key => {
-            if (key === 'image') {
-              formDataWithImage.append('image', formData[key]);
-            } else {
-              formDataWithImage.append(key, formData[key]);
-            }
-          });
-          
-          // Use axios directly to avoid interceptor issues with FormData
-          // Fix the URL by removing /api suffix and then adding it properly
-          const baseUrl = api.defaults.baseURL.replace('/api', '');
-          const response = await axios.post(`${baseUrl}/api/inventory`, formDataWithImage, {
+        if (formData.image) {
+          // If updating with image, use axios directly
+          const response = await axios.put(`${baseUrl}/api/inventory/${currentItemId}`, formData, {
             headers: {
               'Content-Type': 'multipart/form-data',
               'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
           });
-          itemId = response.data.data._id;
+          itemId = response.data._id || currentItemId;
         } else {
-          // If no image, use regular JSON API
-          const response = await api.post('/inventory', formData);
-          itemId = response.data.data._id;
+          // Update without image
+          const dataToSend = {};
+          Object.keys(formData).forEach(key => {
+            if (key !== 'image') {
+              dataToSend[key] = formData[key] || '';
+            }
+          });
+          const response = await api.put(`/inventory/${currentItemId}`, dataToSend);
+          itemId = response.data._id || currentItemId;
         }
-      }
-
-      // If there's an image to upload and we're updating (not creating new)
-      if (editMode && formData.image && formData.image instanceof File) {
-        const formDataWithImage = new FormData();
-        formDataWithImage.append('image', formData.image);
-        
-        // Use axios directly to avoid interceptor issues with FormData
-        await axios.post(`${api.defaults.baseURL}/inventory/${itemId}/image`, formDataWithImage, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
+      } else {
+        // Create new inventory item
+        if (formData.image) {
+          // If creating with image, use axios directly
+          const response = await axios.post(`${baseUrl}/api/inventory`, formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          itemId = response.data._id;
+        } else {
+          // Create without image
+          const dataToSend = {};
+          Object.keys(formData).forEach(key => {
+            if (key !== 'image') {
+              dataToSend[key] = formData[key] || '';
+            }
+          });
+          const response = await api.post('/inventory', dataToSend);
+          itemId = response.data._id;
+        }
       }
 
       // Reset form and fetch updated inventory

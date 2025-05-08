@@ -103,8 +103,8 @@
 
   .nav-menu {
     display: none;
-    position: absolute;
-    top: 100%;
+    position: fixed;
+    top: 60px;
     left: 0;
     right: 0;
     background-color: #1a1a1a;
@@ -113,6 +113,8 @@
     padding: 1rem 0;
     gap: 1rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    width: 100%;
   }
 
   .nav-menu.active {
