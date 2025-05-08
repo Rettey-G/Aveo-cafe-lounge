@@ -16,6 +16,7 @@
   z-index: 999;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
+  overflow-x: auto;
 }
 
 .navbar.scrolled {
@@ -30,19 +31,22 @@
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 0.8rem;
+  padding: 0 0.5rem;
   height: 100%;
-  overflow: hidden;
+  overflow-x: visible;
+  white-space: nowrap;
 }
 
 /* Logo styling */
 .navbar-logo {
   color: #fff;
   text-decoration: none;
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   font-weight: bold;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   transition: all 0.3s ease;
+  flex-shrink: 0;
+  margin-right: 10px;
 }
 
 .navbar-logo:hover {
@@ -68,7 +72,7 @@
 .nav-menu-container {
   display: flex;
   align-items: center;
-  max-width: 85%;
+  flex: 1;
   overflow-x: auto;
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
@@ -90,7 +94,7 @@
 
 /* Category Styles */
 .nav-category {
-  margin: 0 8px;
+  margin: 0 4px;
   position: relative;
 }
 
@@ -113,16 +117,16 @@
 
 /* Nav Item Styles */
 .nav-item {
-  margin: 0 2px;
+  margin: 0 1px;
 }
 
 /* Nav Link Styles */
 .nav-link {
   color: white;
   text-decoration: none;
-  padding: 6px 8px;
+  padding: 6px 6px;
   border-radius: 4px;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   display: flex;
   align-items: center;
   transition: all 0.2s ease;
@@ -136,13 +140,14 @@
 
 /* Link Icon */
 .link-icon {
-  margin-right: 5px;
-  font-size: 1rem;
+  margin-right: 3px;
+  font-size: 0.9rem;
 }
 
 /* Footer & Logout Styles */
 .nav-footer {
-  margin-left: 10px;
+  margin-left: 5px;
+  flex-shrink: 0;
 }
 
 .logout-btn {
@@ -152,8 +157,8 @@
   color: white;
   border: none;
   border-radius: 4px;
-  padding: 8px 16px;
-  font-size: 0.9rem;
+  padding: 6px 10px;
+  font-size: 0.8rem;
   cursor: pointer;
   transition: all 0.2s ease;
 }
