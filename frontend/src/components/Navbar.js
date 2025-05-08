@@ -127,7 +127,7 @@ function Navbar() {
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link to="/menu-items" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                  <Link to="/menu-management" className="nav-link" onClick={() => setIsMenuOpen(false)}>
                     <span className="link-icon">🍽️</span> Menu Items
                   </Link>
                 </li>
@@ -155,80 +155,9 @@ function Navbar() {
               </>
             )}
 
-            {/* Logout */}
-            <li className="nav-item">
-              <button className="nav-link logout-btn" onClick={handleLogout}>
-                <span className="link-icon">🚪</span> Logout
-              </button>
-            </li>
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link to="/menu" className="nav-link" onClick={() => setIsMenuOpen(false)}>
-                    <span className="link-icon">📋</span> Menu
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link to="/about" className="nav-link" onClick={() => setIsMenuOpen(false)}>
-                    <span className="link-icon">ℹ️</span> About
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link to="/contact" className="nav-link" onClick={() => setIsMenuOpen(false)}>
-                    <span className="link-icon">📞</span> Contact
-                  </Link>
-                </li>
-              </ul>
-            </li>
-            
-            {/* Admin Routes */}
-            <li className="nav-category">
-              <span className="category-label">Management</span>
-              <ul className="category-menu">
-                <li className="nav-item">
-                  <Link to="/users" className="nav-link" onClick={() => setIsMenuOpen(false)}>
-                    <span className="link-icon">👥</span> Users
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link to="/inventory" className="nav-link" onClick={() => setIsMenuOpen(false)}>
-                    <span className="link-icon">📦</span> Inventory
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link to="/menu-management" className="nav-link" onClick={() => setIsMenuOpen(false)}>
-                    <span className="link-icon">🍽️</span> Menu Items
-                  </Link>
-                </li>
-              </ul>
-            </li>
-
-            {/* Staff Routes */}
-            <li className="nav-category">
-              <span className="category-label">Operations</span>
-              <ul className="category-menu">
-                <li className="nav-item">
-                  <Link to="/table-layout" className="nav-link" onClick={() => setIsMenuOpen(false)}>
-                    <span className="link-icon">🪑</span> Tables
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link to="/take-order" className="nav-link" onClick={() => setIsMenuOpen(false)}>
-                    <span className="link-icon">📝</span> New Order
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link to="/orders" className="nav-link" onClick={() => setIsMenuOpen(false)}>
-                    <span className="link-icon">📋</span> Orders
-                  </Link>
-                </li>
-              </ul>
-            </li>
-
             {/* Financial Routes */}
-            <li className="nav-category">
-              <span className="category-label">Billing</span>
-              <ul className="category-menu">
+            {(userRole === 'admin' || userRole === 'manager' || userRole === 'cashier') && (
+              <>
                 <li className="nav-item">
                   <Link to="/invoices" className="nav-link" onClick={() => setIsMenuOpen(false)}>
                     <span className="link-icon">🧾</span> Create Invoice
@@ -239,19 +168,16 @@ function Navbar() {
                     <span className="link-icon">📊</span> All Invoices
                   </Link>
                 </li>
-              </ul>
+              </>
+            )}
+
+            {/* Logout */}
+            <li className="nav-item">
+              <button className="nav-link logout-btn" onClick={handleLogout}>
+                <span className="link-icon">🚪</span> Logout
+              </button>
             </li>
           </ul>
-          
-          {/* Logout Button */}
-          <div className="nav-footer">
-            <button
-              className="logout-btn"
-              onClick={handleLogout}
-            >
-              <span className="link-icon">🚪</span> Logout
-            </button>
-          </div>
         </div>
       </div>
       
