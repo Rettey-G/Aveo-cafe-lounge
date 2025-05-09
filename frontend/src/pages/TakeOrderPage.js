@@ -389,7 +389,6 @@ const TakeOrderPage = () => {
           </div>
         </div>
       </div>
-      </div>
     </div>
   );
 };
