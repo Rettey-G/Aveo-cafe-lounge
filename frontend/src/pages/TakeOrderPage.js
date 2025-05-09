@@ -49,8 +49,8 @@ const TakeOrderPage = () => {
 
   const fetchTables = async () => {
     try {
-      const response = await api.get('/tables');
-      setTables(response.data);
+      const tables = await api.tables.getAll();
+      setTables(tables);
       setError(null);
     } catch (err) {
       setError('Failed to fetch tables');
@@ -60,8 +60,8 @@ const TakeOrderPage = () => {
 
   const fetchMenuItems = async () => {
     try {
-      const response = await api.get('/menu-items');
-      setMenuItems(response.data);
+      const items = await api.menuItems.getAll();
+      setMenuItems(items);
       setError(null);
     } catch (err) {
       setError('Failed to fetch menu items');
@@ -144,19 +144,21 @@ const TakeOrderPage = () => {
       setSuccess(null);
 
       // First check if table is still available
-      const tableResponse = await api.get(`/tables/${selectedTable._id}`);
-      if (tableResponse.data.status === 'occupied') {
+      const tables = await api.tables.getAll();
+      const currentTable = tables.find(t => t.id === selectedTable.id);
+      if (currentTable.status === 'occupied') {
         setError('This table is now occupied. Please select another table.');
         return;
       }
 
       const orderData = {
-        table: selectedTable._id,
+        tableId: selectedTable.id,
+        tableNumber: selectedTable.tableNumber,
         items: order.map(item => ({
-          item: item._id,
+          itemId: item.id,
+          name: item.name,
           quantity: item.qty,
-          price: item.price,
-          name: item.name
+          price: item.price
         })),
         orderType: 'KOT',
         status: 'pending',
@@ -165,13 +167,14 @@ const TakeOrderPage = () => {
         serviceCharge: serviceCharge
       };
 
-      console.log('Sending order data:', JSON.stringify(orderData, null, 2));
+      console.log('Sending order data:', orderData);
 
-      const response = await api.post('/orders', orderData);
+      // Create the order
+      const newOrder = await api.orders.create(orderData);
       
-      if (response.data) {
+      if (newOrder) {
         // Update table status to occupied
-        await api.put(`/tables/${selectedTable._id}`, {
+        await api.tables.update(selectedTable.id, {
           status: 'occupied'
         });
         
@@ -184,14 +187,7 @@ const TakeOrderPage = () => {
       }
     } catch (err) {
       console.error('Order Error:', err);
-      if (err.response) {
-        console.error('Error Response:', err.response.data);
-        setError(`Failed to place order: ${err.response.data.message || err.response.data.error || 'Server error'}`);
-      } else if (err.request) {
-        setError('No response from server. Please check your connection.');
-      } else {
-        setError('Failed to place order. Please try again.');
-      }
+      setError(err.message || 'Failed to place order. Please try again.');
     } finally {
       setLoading(false);
     }

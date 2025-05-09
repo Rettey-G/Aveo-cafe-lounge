@@ -1,85 +1,121 @@
-import axios from 'axios';
+import { 
+  collection, 
+  addDoc, 
+  updateDoc, 
+  doc, 
+  getDocs, 
+  getDoc,
+  query,
+  where,
+  serverTimestamp 
+} from 'firebase/firestore';
+import { db } from './firebase';
 
-// Create a base API URL that works in both development and production
-const API_URL = process.env.REACT_APP_API_URL || 'https://aveo-cafe-backend.onrender.com/api';
+// Helper function to handle errors
+const handleError = (error) => {
+  console.error('Firebase Error:', error);
+  throw new Error(error.message || 'An error occurred');
+};
 
-// Create an axios instance with default config
-const api = axios.create({
-  baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: true // This helps with CORS issues when cookies need to be sent
-});
-
-// Add a request interceptor to add the auth token to every request
-api.interceptors.request.use(
-  config => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+// Orders API
+export const ordersApi = {
+  create: async (orderData) => {
+    try {
+      const orderRef = await addDoc(collection(db, 'orders'), {
+        ...orderData,
+        createdAt: serverTimestamp(),
+        status: 'pending'
+      });
+      return { id: orderRef.id, ...orderData };
+    } catch (error) {
+      handleError(error);
     }
-    // Log the request for debugging
-    console.log('API Request:', {
-      url: config.url,
-      method: config.method,
-      data: config.data,
-      headers: config.headers
-    });
-    return config;
   },
-  error => {
-    console.error('API Request Error:', error);
-    return Promise.reject(error);
-  }
-);
 
-// Add a response interceptor to handle common errors
-api.interceptors.response.use(
-  response => {
-    // Log successful responses for debugging
-    console.log('API Response:', {
-      url: response.config.url,
-      status: response.status,
-      data: response.data
-    });
-    return response;
+  getAll: async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, 'orders'));
+      return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+    } catch (error) {
+      handleError(error);
+    }
   },
-  error => {
-    // Log detailed error information
-    console.error('API Error Details:', {
-      url: error.config?.url,
-      method: error.config?.method,
-      status: error.response?.status,
-      data: error.response?.data,
-      message: error.message
-    });
 
-    // Handle 401 Unauthorized errors (token expired or invalid)
-    if (error.response && error.response.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('userRole');
-      // Redirect to login page if not already there
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
+  getById: async (id) => {
+    try {
+      const docRef = doc(db, 'orders', id);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        return { id: docSnap.id, ...docSnap.data() };
       }
+      throw new Error('Order not found');
+    } catch (error) {
+      handleError(error);
     }
-    
-    // Handle 403 Forbidden errors (insufficient permissions)
-    if (error.response && error.response.status === 403) {
-      console.error('Permission denied. Your role may not have access to this resource.');
-      
-      // Check if user is not using admin role
-      const userRole = localStorage.getItem('userRole');
-      if (userRole !== 'admin') {
-        // Display user-friendly message
-        alert('You need admin privileges to perform this action. Please log in as an admin user.');
-      }
-    }
-    
-    return Promise.reject(error);
   }
-);
+};
+
+// Tables API
+export const tablesApi = {
+  getAll: async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, 'tables'));
+      return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+    } catch (error) {
+      handleError(error);
+    }
+  },
+
+  update: async (id, data) => {
+    try {
+      const tableRef = doc(db, 'tables', id);
+      await updateDoc(tableRef, data);
+      return { id, ...data };
+    } catch (error) {
+      handleError(error);
+    }
+  }
+};
+
+// Menu Items API
+export const menuItemsApi = {
+  getAll: async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, 'menuItems'));
+      return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+    } catch (error) {
+      handleError(error);
+    }
+  },
+
+  getById: async (id) => {
+    try {
+      const docRef = doc(db, 'menuItems', id);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        return { id: docSnap.id, ...docSnap.data() };
+      }
+      throw new Error('Menu item not found');
+    } catch (error) {
+      handleError(error);
+    }
+  }
+};
+
+// Export a default object with all APIs
+const api = {
+  orders: ordersApi,
+  tables: tablesApi,
+  menuItems: menuItemsApi
+};
 
 export default api;
-export { API_URL };
