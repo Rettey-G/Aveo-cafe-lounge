@@ -6,7 +6,7 @@ import './TakeOrderPage.css';
 const TakeOrderPage = () => {
   const navigate = useNavigate();
   const [menuItems, setMenuItems] = useState([]);
-  const [categories, setCategories] = useState(['Coffee', 'Tea', 'Juice', 'Smoothie', 'Bakery']);
+  const [categories] = useState(['Coffee', 'Tea', 'Juice', 'Smoothie', 'Bakery']);
   const [selectedCategory, setSelectedCategory] = useState('Coffee');
   const [selectedTable, setSelectedTable] = useState(null);
   const [tables, setTables] = useState([]);
@@ -185,6 +185,7 @@ const TakeOrderPage = () => {
                 key={category}
                 className={`category-btn ${selectedCategory === category ? 'active' : ''}`}
                 onClick={() => setSelectedCategory(category)}
+                data-category={category}
               >
                 {category}
               </button>
@@ -257,7 +258,7 @@ const TakeOrderPage = () => {
             </div>
           </div>
 
-          <div className="menu-grid">
+          <div className="menu-items-grid">
             {menuItems
               .filter(item => item.category === selectedCategory)
               .map(item => (
@@ -266,16 +267,24 @@ const TakeOrderPage = () => {
                   className="menu-item"
                   onClick={() => addToOrder(item)}
                 >
-                  {item.image && <img src={item.image} alt={item.name} />}
-                  <h3>{item.name}</h3>
-                  <p>${item.price.toFixed(2)}</p>
+                  <div className="menu-item-image">
+                    {item.image ? (
+                      <img src={item.image} alt={item.name} />
+                    ) : (
+                      <div className="placeholder-image">🍽️</div>
+                    )}
+                  </div>
+                  <div className="menu-item-details">
+                    <h3 className="menu-item-name">{item.name}</h3>
+                    <p className="menu-item-price">${item.price.toFixed(2)}</p>
+                  </div>
                 </div>
               ))}
           </div>
         </div>
-
+        
         <div className="order-summary">
-          <div className="order-type-toggle">
+          <div className="order-type-selector">
             <button
               className={`order-type-btn ${orderType === 'dine-in' ? 'active' : ''}`}
               onClick={() => setOrderType('dine-in')}
@@ -283,8 +292,8 @@ const TakeOrderPage = () => {
               Dine In
             </button>
             <button
-              className={`order-type-btn ${orderType === 'take-away' ? 'active' : ''}`}
-              onClick={() => setOrderType('take-away')}
+              className={`order-type-btn ${orderType === 'takeaway' ? 'active' : ''}`}
+              onClick={() => setOrderType('takeaway')}
             >
               Take Away
             </button>
@@ -308,9 +317,9 @@ const TakeOrderPage = () => {
           <div className="order-items">
             {currentOrder.map((item, index) => (
               <div key={index} className="order-item">
-                <div className="item-details">
-                  <h4>{item.name}</h4>
-                  <p>
+                <div className="order-item-details">
+                  <h4 className="order-item-name">{item.name}</h4>
+                  <p className="order-item-customizations">
                     Size: {item.size}
                     {Object.entries(item.customizations)
                       .filter(([key, value]) => value && key !== 'freshMilk')
@@ -325,7 +334,7 @@ const TakeOrderPage = () => {
                   >
                     -
                   </button>
-                  <span>{item.quantity}</span>
+                  <span className="quantity-value">{item.quantity}</span>
                   <button
                     className="quantity-btn"
                     onClick={() => updateQuantity(index, item.quantity + 1)}
@@ -335,11 +344,12 @@ const TakeOrderPage = () => {
                   <button
                     className="remove-btn"
                     onClick={() => removeFromOrder(index)}
+                    aria-label="Remove item"
                   >
                     ×
                   </button>
                 </div>
-                <div className="item-total">
+                <div className="order-item-total">
                   ${calculateItemTotal(item).toFixed(2)}
                 </div>
               </div>
@@ -378,6 +388,7 @@ const TakeOrderPage = () => {
             </button>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
