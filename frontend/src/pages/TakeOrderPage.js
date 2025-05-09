@@ -32,6 +32,7 @@ const TakeOrderPage = () => {
   const [payment, setPayment] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
   // Fetch tables and menu items on component mount
   useEffect(() => {
@@ -71,11 +72,20 @@ const TakeOrderPage = () => {
   };
 
   const handleTableSelect = (table) => {
+    if (table.status === 'occupied') {
+      setError('This table is already occupied');
+      return;
+    }
     setSelectedTable(table);
     setOrder([]); // Clear order when changing tables
+    setError(null);
   };
 
   const addItem = (item) => {
+    if (!selectedTable) {
+      setError('Please select a table first');
+      return;
+    }
     const existingItem = order.find(orderItem => orderItem._id === item._id);
     if (existingItem) {
       setOrder(order.map(orderItem => 
@@ -86,6 +96,7 @@ const TakeOrderPage = () => {
     } else {
       setOrder([...order, { ...item, qty: 1 }]);
     }
+    setError(null);
   };
 
   const removeItem = (itemId) => {
@@ -105,6 +116,7 @@ const TakeOrderPage = () => {
   const handleVoid = () => {
     if (window.confirm('Are you sure you want to void this order?')) {
       setOrder([]);
+      setError(null);
     }
   };
 
@@ -112,6 +124,7 @@ const TakeOrderPage = () => {
     if (window.confirm('Are you sure you want to cancel this order?')) {
       setOrder([]);
       setSelectedTable(null);
+      setError(null);
     }
   };
 
@@ -126,28 +139,59 @@ const TakeOrderPage = () => {
     }
 
     try {
+      setLoading(true);
       const orderData = {
-        table: selectedTable._id,
+        tableNumber: selectedTable.tableNumber,
         items: order.map(item => ({
           menuItem: item._id,
           quantity: item.qty,
           price: item.price
         })),
+        orderType: 'KOT',
         subtotal,
         serviceCharge,
-        total: subtotal + serviceCharge
+        total: subtotal + serviceCharge,
+        status: 'pending'
       };
 
-      await api.post('/orders', orderData);
-      setOrder([]);
-      setSelectedTable(null);
-      setError(null);
-      alert('Order sent successfully!');
+      const response = await api.post('/orders', orderData);
+      
+      if (response.data) {
+        // Update table status to occupied
+        await api.put(`/tables/${selectedTable._id}`, {
+          status: 'occupied'
+        });
+        
+        setOrder([]);
+        setSelectedTable(null);
+        setError(null);
+        setSuccess('Order sent successfully!');
+        setTimeout(() => setSuccess(null), 3000);
+        
+        // Refresh tables to update status
+        await fetchTables();
+      }
     } catch (err) {
-      setError('Failed to send order');
-      console.error(err);
+      console.error('Order Error:', err);
+      setError(err.response?.data?.message || 'Failed to send order. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
+
+  // Add polling for table status updates
+  useEffect(() => {
+    const pollTables = setInterval(() => {
+      fetchTables();
+    }, 30000); // Poll every 30 seconds
+
+    return () => clearInterval(pollTables);
+  }, []);
+
+  // Add loading state to UI
+  if (loading) {
+    return <div className="loading">Loading...</div>;
+  }
 
   return (
     <div className="classic-pos-root">
@@ -161,13 +205,18 @@ const TakeOrderPage = () => {
           {tables.map(table => (
             <button
               key={table._id}
-              className={`table-btn ${selectedTable?._id === table._id ? 'selected' : ''}`}
+              className={`table-btn ${selectedTable?._id === table._id ? 'selected' : ''} ${table.status}`}
               onClick={() => handleTableSelect(table)}
+              disabled={table.status === 'occupied'}
             >
               Table {table.tableNumber}
+              {table.status === 'occupied' && ' (Occupied)'}
             </button>
           ))}
         </div>
+
+        {error && <div className="error-message">{error}</div>}
+        {success && <div className="success-message">{success}</div>}
 
         <div className="classic-pos-order-list">
           <div className="classic-pos-order-item-header">
@@ -182,17 +231,17 @@ const TakeOrderPage = () => {
                 {item.qty}
                 <button onClick={() => updateQuantity(item._id, item.qty + 1)}>+</button>
               </span>
-              <span>${(item.price * item.qty).toFixed(2)}</span>
+              <span>Rs. {(item.price * item.qty).toFixed(2)}</span>
             </div>
           ))}
         </div>
 
         <div className="classic-pos-summary">
-          <div>Subtotal <span>${subtotal.toFixed(2)}</span></div>
-          <div>Service Chrg <span>${serviceCharge.toFixed(2)}</span></div>
-          <div>Payment <span>${payment.toFixed(2)}</span></div>
+          <div>Subtotal <span>Rs. {subtotal.toFixed(2)}</span></div>
+          <div>Service Chrg <span>Rs. {serviceCharge.toFixed(2)}</span></div>
+          <div>Payment <span>Rs. {payment.toFixed(2)}</span></div>
           <div className="classic-pos-total">
-            Total <span>${(subtotal + serviceCharge).toFixed(2)}</span>
+            Total <span>Rs. {(subtotal + serviceCharge).toFixed(2)}</span>
           </div>
         </div>
       </div>
@@ -211,13 +260,20 @@ const TakeOrderPage = () => {
               onClick={() => addItem(item)}
             >
               {item.name}
+              <span className="price">Rs. {item.price}</span>
             </button>
           ))}
         </div>
         <div className="classic-pos-actions">
           <button className="classic-pos-action-btn red" onClick={handleVoid}>Void</button>
           <button className="classic-pos-action-btn red" onClick={handleCancel}>Cancel</button>
-          <button className="classic-pos-action-btn green" onClick={handleSend}>Send</button>
+          <button 
+            className="classic-pos-action-btn green" 
+            onClick={handleSend}
+            disabled={!selectedTable || order.length === 0}
+          >
+            Send
+          </button>
         </div>
       </div>
     </div>
