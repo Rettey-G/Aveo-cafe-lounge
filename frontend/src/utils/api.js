@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Create a base API URL that works in both development and production
-const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '') + '/api';
+const API_URL = process.env.REACT_APP_API_URL || 'https://aveo-cafe-backend.onrender.com/api';
 
 // Create an axios instance with default config
 const api = axios.create({
@@ -19,17 +19,42 @@ api.interceptors.request.use(
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
+    // Log the request for debugging
+    console.log('API Request:', {
+      url: config.url,
+      method: config.method,
+      data: config.data,
+      headers: config.headers
+    });
     return config;
   },
   error => {
+    console.error('API Request Error:', error);
     return Promise.reject(error);
   }
 );
 
 // Add a response interceptor to handle common errors
 api.interceptors.response.use(
-  response => response,
+  response => {
+    // Log successful responses for debugging
+    console.log('API Response:', {
+      url: response.config.url,
+      status: response.status,
+      data: response.data
+    });
+    return response;
+  },
   error => {
+    // Log detailed error information
+    console.error('API Error Details:', {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message
+    });
+
     // Handle 401 Unauthorized errors (token expired or invalid)
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('token');
@@ -51,9 +76,6 @@ api.interceptors.response.use(
         alert('You need admin privileges to perform this action. Please log in as an admin user.');
       }
     }
-    
-    // Log all errors for debugging
-    console.error('API Error:', error.response?.data || error.message);
     
     return Promise.reject(error);
   }

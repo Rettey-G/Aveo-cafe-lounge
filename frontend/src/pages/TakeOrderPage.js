@@ -151,20 +151,21 @@ const TakeOrderPage = () => {
       }
 
       const orderData = {
-        tableNumber: selectedTable.tableNumber,
+        table: selectedTable._id,
         items: order.map(item => ({
-          menuItem: item._id,
+          item: item._id,
           quantity: item.qty,
-          price: item.price
+          price: item.price,
+          name: item.name
         })),
         orderType: 'KOT',
-        subtotal,
-        serviceCharge,
-        total: subtotal + serviceCharge,
-        status: 'pending'
+        status: 'pending',
+        totalAmount: subtotal + serviceCharge,
+        subtotal: subtotal,
+        serviceCharge: serviceCharge
       };
 
-      console.log('Sending order:', orderData); // Debug log
+      console.log('Sending order data:', JSON.stringify(orderData, null, 2));
 
       const response = await api.post('/orders', orderData);
       
@@ -184,7 +185,8 @@ const TakeOrderPage = () => {
     } catch (err) {
       console.error('Order Error:', err);
       if (err.response) {
-        setError(`Failed to place order: ${err.response.data.message || 'Server error'}`);
+        console.error('Error Response:', err.response.data);
+        setError(`Failed to place order: ${err.response.data.message || err.response.data.error || 'Server error'}`);
       } else if (err.request) {
         setError('No response from server. Please check your connection.');
       } else {
