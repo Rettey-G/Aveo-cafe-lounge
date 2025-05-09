@@ -140,6 +140,16 @@ const TakeOrderPage = () => {
 
     try {
       setLoading(true);
+      setError(null);
+      setSuccess(null);
+
+      // First check if table is still available
+      const tableResponse = await api.get(`/tables/${selectedTable._id}`);
+      if (tableResponse.data.status === 'occupied') {
+        setError('This table is now occupied. Please select another table.');
+        return;
+      }
+
       const orderData = {
         tableNumber: selectedTable.tableNumber,
         items: order.map(item => ({
@@ -154,6 +164,8 @@ const TakeOrderPage = () => {
         status: 'pending'
       };
 
+      console.log('Sending order:', orderData); // Debug log
+
       const response = await api.post('/orders', orderData);
       
       if (response.data) {
@@ -164,19 +176,28 @@ const TakeOrderPage = () => {
         
         setOrder([]);
         setSelectedTable(null);
-        setError(null);
-        setSuccess('Order sent successfully!');
-        setTimeout(() => setSuccess(null), 3000);
+        setSuccess('Order placed successfully! Table is now occupied.');
         
         // Refresh tables to update status
         await fetchTables();
       }
     } catch (err) {
       console.error('Order Error:', err);
-      setError(err.response?.data?.message || 'Failed to send order. Please try again.');
+      if (err.response) {
+        setError(`Failed to place order: ${err.response.data.message || 'Server error'}`);
+      } else if (err.request) {
+        setError('No response from server. Please check your connection.');
+      } else {
+        setError('Failed to place order. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
+  };
+
+  // Add a function to check if order can be sent
+  const canSendOrder = () => {
+    return selectedTable && order.length > 0 && !loading;
   };
 
   // Add polling for table status updates
@@ -268,11 +289,11 @@ const TakeOrderPage = () => {
           <button className="classic-pos-action-btn red" onClick={handleVoid}>Void</button>
           <button className="classic-pos-action-btn red" onClick={handleCancel}>Cancel</button>
           <button 
-            className="classic-pos-action-btn green" 
+            className={`classic-pos-action-btn green ${!canSendOrder() ? 'disabled' : ''}`}
             onClick={handleSend}
-            disabled={!selectedTable || order.length === 0}
+            disabled={!canSendOrder()}
           >
-            Send
+            {loading ? 'Sending...' : 'Send'}
           </button>
         </div>
       </div>
