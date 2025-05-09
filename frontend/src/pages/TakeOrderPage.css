@@ -27,6 +27,38 @@
   text-align: center;
 }
 
+/* Table Selection */
+.table-selection {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 10px;
+  background: #333;
+  border-radius: 6px;
+}
+
+.table-btn {
+  background: #444;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.table-btn:hover {
+  background: #555;
+}
+
+.table-btn.selected {
+  background: #ffe600;
+  color: #222;
+  font-weight: bold;
+}
+
 .classic-pos-order-list {
   background: #fff;
   color: #222;
@@ -37,19 +69,42 @@
   margin-bottom: 12px;
   font-size: 1rem;
 }
+
 .classic-pos-order-item-header, .classic-pos-order-item {
   display: flex;
   justify-content: space-between;
   padding: 4px 10px;
   border-bottom: 1px solid #eee;
 }
+
 .classic-pos-order-item-header {
   background: #e0e0e0;
   color: #222;
   font-weight: bold;
 }
+
 .classic-pos-order-item:last-child {
   border-bottom: none;
+}
+
+/* Quantity Controls */
+.classic-pos-order-item button {
+  background: #444;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  margin: 0 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.classic-pos-order-item button:hover {
+  background: #555;
 }
 
 .classic-pos-summary {
@@ -59,11 +114,13 @@
   margin-top: 10px;
   padding: 10px 0 0 0;
 }
+
 .classic-pos-summary > div {
   display: flex;
   justify-content: space-between;
   margin-bottom: 4px;
 }
+
 .classic-pos-total {
   background: #ffe600;
   color: #b00;
@@ -83,30 +140,6 @@
   padding: 18px 18px 12px 18px;
   background: #333;
 }
-.classic-pos-combos {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-.classic-pos-combo-btn {
-  flex: 1 1 22%;
-  min-width: 90px;
-  background: #1e90ff;
-  color: #fff;
-  font-size: 1rem;
-  font-weight: bold;
-  border: none;
-  border-radius: 6px;
-  padding: 12px 0;
-  margin-bottom: 2px;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-  transition: background 0.2s;
-}
-.classic-pos-combo-btn:hover {
-  background: #1565c0;
-}
 
 .classic-pos-menu-grid {
   display: grid;
@@ -114,6 +147,7 @@
   gap: 10px;
   margin-bottom: 12px;
 }
+
 .classic-pos-menu-btn {
   background: #eee;
   color: #222;
@@ -126,6 +160,7 @@
   box-shadow: 0 2px 4px rgba(0,0,0,0.12);
   transition: background 0.2s, color 0.2s;
 }
+
 .classic-pos-menu-btn:hover {
   background: #ffe600;
   color: #b00;
@@ -136,6 +171,7 @@
   gap: 10px;
   margin-top: auto;
 }
+
 .classic-pos-action-btn {
   flex: 1 1 0;
   font-size: 1.1rem;
@@ -147,36 +183,53 @@
   box-shadow: 0 2px 4px rgba(0,0,0,0.12);
   transition: background 0.2s, color 0.2s;
 }
+
 .classic-pos-action-btn.red {
   background: #d32f2f;
   color: #fff;
 }
+
 .classic-pos-action-btn.red:hover {
   background: #b71c1c;
 }
+
 .classic-pos-action-btn.green {
   background: #388e3c;
   color: #fff;
 }
+
 .classic-pos-action-btn.green:hover {
   background: #1b5e20;
 }
+
 .classic-pos-action-btn.blue {
   background: #1976d2;
   color: #fff;
 }
+
 .classic-pos-action-btn.blue:hover {
   background: #0d47a1;
+}
+
+/* Error Message */
+.error-message {
+  background: #d32f2f;
+  color: #fff;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  text-align: center;
 }
 
 @media (max-width: 1100px) {
   .classic-pos-menu-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  .classic-pos-combos {
-    flex-direction: column;
+  .table-selection {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
+
 @media (max-width: 800px) {
   .classic-pos-root {
     flex-direction: column;
@@ -187,5 +240,8 @@
   }
   .classic-pos-menu-grid {
     grid-template-columns: 1fr;
+  }
+  .table-selection {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
