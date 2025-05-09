@@ -15,6 +15,7 @@ import OrdersPage from './pages/OrdersPage';
 import MenuManagementPage from './pages/MenuManagementPage';
 import UserManagement from './pages/UserManagement';
 import Login from './pages/Login';
+import ClassicOrderPage from './pages/ClassicOrderPage';
 import './App.css';
 
 // Protected Route component with role check - temporarily allowing all access
@@ -119,6 +120,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={['admin', 'manager', 'waiter', 'cashier']}>
                   <TakeOrderPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/classic-order" 
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'manager', 'waiter', 'cashier']}>
+                  <ClassicOrderPage />
                 </ProtectedRoute>
               } 
             />
