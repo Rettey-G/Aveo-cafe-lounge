@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Footer from './components/Footer';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
@@ -16,6 +16,9 @@ import MenuManagementPage from './pages/MenuManagementPage';
 import UserManagement from './pages/UserManagement';
 import Login from './pages/Login';
 import ClassicOrderPage from './pages/ClassicOrderPage';
+import { initializeDatabase, checkDatabaseInitialized } from './utils/initFirebase';
+import LoginPage from './pages/LoginPage';
+import Dashboard from './pages/Dashboard';
 import './App.css';
 
 // Protected Route component with role check - temporarily allowing all access
@@ -37,6 +40,35 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
 };
 
 function App() {
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const initApp = async () => {
+      try {
+        // Check if database is initialized
+        const { tablesInitialized, menuItemsInitialized } = await checkDatabaseInitialized();
+        
+        // If not initialized, initialize the database
+        if (!tablesInitialized || !menuItemsInitialized) {
+          await initializeDatabase();
+        }
+        
+        setIsInitialized(true);
+      } catch (error) {
+        console.error('Error initializing app:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initApp();
+  }, []);
+
+  if (isLoading) {
+    return <div className="loading">Initializing App...</div>;
+  }
+
   return (
     <Router>
       <div className="app">
